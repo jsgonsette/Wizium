@@ -2,7 +2,7 @@
 
 This project is a crosswords generator engine able to generate grids like this from dictonaries:
 
-![Pendulum PCB](./pictures/Crosswords.png)
+![Crosswords](./Pictures/Crosswords.png)
 
 The engine comes as a library written in C++. A python wrapper is available right now, other languages may be easily added.
 
