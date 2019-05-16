@@ -187,8 +187,6 @@ Status SolverDynamic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 		// Item context: set position and get letter candidates from the grid
 		pItem->posX = x - space.left;
 		pItem->posY = y;
-		int length = space.left + 1 + space.right;
-		//LoadCandidatesFromGrid (pItem);
 		pItem->LoadCandidatesFromGrid (*this->pGrid);
 
 		// Find a first solution for this item
