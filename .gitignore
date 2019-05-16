@@ -6,6 +6,10 @@
 *.lo
 *.o
 *.obj
+*.pdb
+*.ipdb
+*.iobj
+*.exp
 
 # Precompiled Headers
 *.gch
@@ -14,7 +18,7 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
+# *.dll
 
 # Fortran module files
 *.mod
@@ -27,6 +31,6 @@
 *.lib
 
 # Executables
-*.exe
+# *.exe
 *.out
 *.app

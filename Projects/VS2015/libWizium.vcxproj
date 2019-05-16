@@ -155,7 +155,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Dictionary\Dictionary.cpp" />
-    <ClCompile Include="..\..\Sources\Engine.cpp" />
     <ClCompile Include="..\..\Sources\Grid\Box.cpp" />
     <ClCompile Include="..\..\Sources\Grid\Grid.cpp" />
     <ClCompile Include="..\..\Sources\library.cpp" />
@@ -165,7 +164,6 @@
     <ClCompile Include="..\..\Sources\Solvers\SolverDynamic.DynamicItem.cpp" />
     <ClCompile Include="..\..\Sources\Solvers\SolverStatic.cpp" />
     <ClCompile Include="..\..\Sources\Solvers\SolverStatic.StaticItem.cpp" />
-    <ClCompile Include="..\..\Sources\Solvers\SolverStatic2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Dictionary\Dictionary.h" />
@@ -179,7 +177,6 @@
     <ClInclude Include="..\..\Sources\Solvers\SolverDynamic.h" />
     <ClInclude Include="..\..\Sources\Solvers\SolverStatic.h" />
     <ClInclude Include="..\..\Sources\Solvers\SolverStatic.StaticItem.h" />
-    <ClInclude Include="..\..\Sources\Solvers\SolverStatic2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

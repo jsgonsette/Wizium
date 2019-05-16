@@ -44,7 +44,7 @@ public:
 	virtual Status Solve_Step (int32_t maxTimeMs, int32_t maxSteps) = 0;
 	virtual void Solve_Stop () = 0;
 
-	virtual void SetHeurestic (bool state, int param) {};
+	virtual void SetHeurestic (bool state, int param) = 0;
 	virtual void SetSeed (uint64_t seed) {this->seed = seed;}
 
 protected:
@@ -53,8 +53,8 @@ protected:
 	Grid *pGrid;				///< Grid to solve
 	const Dictionary *pDict;	///< Dictionary to use
 
-	uint8_t mSx, mSy;	///< Grid size
 	uint64_t seed;		///< Seed for the random generator	
+	uint8_t mSx, mSy;	///< Grid size
 	uint64_t steps;		///< Number of steps during the generation
 };
 

@@ -21,7 +21,7 @@
 /// \brief	Singleton holding all the Wizium instances
 // ###########################################################################
 
-#include "Library.h"
+#include "library.h"
 #include "library.Module.h"
 
 

@@ -20,7 +20,7 @@
 /// \brief An independent module for solving grids
 // ###########################################################################
 
-#include "Library.Module.h"
+#include "library.Module.h"
 
 
 // ###########################################################################

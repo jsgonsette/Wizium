@@ -479,8 +479,8 @@ bool SolverStatic::ChangeItemWord (StaticItem &item, uint8_t mask [], int unvali
 		// There is no guarantee, for example: if we must change 'A' in 'SABLER', we could still get 'TABLER'
 		if (unvalidatedIdx >= 0 && letterToChange == item.word [unvalidatedIdx]) continue;
 
-		// Check the word is not already on the grid
-		if (item.length > 1);
+		// Check the word is not already on the grid (TODO)
+		//if (item.length > 1);
 
 		// All conditions match
 		break;
@@ -929,19 +929,19 @@ void SolverStatic::ExcludeDefinedWords (StaticItem pList [], int listLength)
 // ===========================================================================
 int SolverStatic::AreDependant (const StaticItem &item1, const StaticItem &item2, uint8_t* dependencyMask)
 {
-	unsigned char i1_xStart, i1_yStart, i1_xEnd, i1_yEnd;
-	unsigned char i2_xStart, i2_yStart, i2_xEnd, i2_yEnd;
+	unsigned char i1_xStart, i1_y, i1_xEnd;
+	unsigned char i2_xStart, i2_y, i2_xEnd;
 	int connect = 0;
 	int i, j;
 
 	// Start and end coordinates for item 1
 	i1_xEnd = i1_xStart = item1.posX;
-	i1_yEnd = i1_yStart = item1.posY;
+	i1_y = item1.posY;
 	i1_xEnd += item1.length -1;
 
 	// Start and end coordinates for item 2
 	i2_xEnd = i2_xStart = item2.posX;
-	i2_yEnd = i2_yStart = item2.posY;
+	i2_y = item2.posY;
 	i2_xEnd += item2.length -1;
 
 	// Clear mask
@@ -958,19 +958,19 @@ int SolverStatic::AreDependant (const StaticItem &item1, const StaticItem &item2
 		// Start and end Coordinates of the adjacent letters
 		int s = (i1_xStart > i2_xStart) ? i1_xStart : i2_xStart;
 		int e = (i1_xEnd < i2_xEnd) ? i1_xEnd : i2_xEnd;
-		int step = (i1_yStart < i2_yStart) ? 1 : -1;
+		int step = (i1_y < i2_y) ? 1 : -1;
 
 		// Check each boxes for the adjacent letters
 		for (i = s; i <= e; i ++)
 		{
 			// Test the vertical path between both words
-			for (j = i1_yStart +step; j != i2_yStart; j+= step)
+			for (j = i1_y +step; j != i2_y; j+= step)
 			{
 				if ( (*pGrid) (i, j)->IsBloc () ) break;
 			}
 
 			// If no block in between
-			if (j == i2_yStart) 
+			if (j == i2_y) 
 			{
 				// Mark the mask with a '*'
 				if (dependencyMask != nullptr) dependencyMask [i - i1_xStart] = '*';
