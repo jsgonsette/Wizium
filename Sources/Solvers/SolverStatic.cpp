@@ -100,17 +100,7 @@ void SolverStatic::SetHeurestic (bool state, int backTreshold)
 void SolverStatic::Solve_Stop ()
 {
 	// Unlock all grid boxes	
-	if (pGrid != nullptr)
-	{
-		for (int y = 0; y < mSy; y ++)
-		{
-			for (int x = 0; x < mSx; x ++)
-			{
-				Box* box = pGrid->operator ()(x, y);
-				box->Lock (false);
-			}
-		}
-	}
+	if (pGrid != nullptr) pGrid->Unlock ();
 
 	this->pDict = nullptr;
 	this->pGrid = nullptr;
@@ -128,8 +118,6 @@ void SolverStatic::Solve_Stop ()
 // ===========================================================================
 void SolverStatic::Solve_Start (Grid &grid, const Dictionary &dico)
 {
-	int x, y;
-	int count = 0;
 	Box *box = nullptr;
 
 	Solve_Stop ();
@@ -144,28 +132,7 @@ void SolverStatic::Solve_Start (Grid &grid, const Dictionary &dico)
 	this->pGrid->SetDensityMode (Grid::BlocDensityMode::NONE);
 
 	// Lock non empty boxes
-	for (y = 0; y < mSy; y ++)
-	{
-		for (x = 0; x < mSx; x ++)
-		{
-			box = pGrid->operator ()(x,y);
-
-			// Lock the box if not empty
-			if (box->IsLetter () == false || box->GetLetter() != 0) 
-				box->Lock (true);
-
-			// If empty, store the number of preceding unlocked boxes
-			else
-			{
-				box->tag = count;
-				box->Lock (false);
-				count ++;
-			}
-		}
-	}
-
-	// Erase the grid, except the locked boxes (why ?)
-	pGrid->Erase ();
+	this->pGrid->LockContent ();
 
 	// Establish a static ordered list of word slots for whose we must find a solution
 	if (m_pItemList != nullptr) delete [] m_pItemList;
@@ -206,13 +173,6 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 	// Main search loop, we have finished when we have found something for every slots in our list
 	while (m_idxCurrentItem < m_numItems)
 	{		
-		// Skip slots tagged so
-		//if (m_pItemList [m_idxCurrentItem].dictStep == C_StaticItem2::Ce_Skip)
-		//{
-		//	m_idxCurrentItem ++;
-		//	continue;
-		//}
-
 		// Get item to solve during this iteration
 		StaticItem *pItem = &m_pItemList [m_idxCurrentItem];
 
@@ -238,6 +198,7 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 		if (m_idxCurrentItem < 0)
 		{
 			pDict = nullptr;
+			pGrid->Erase ();
 			break;
 		}
 

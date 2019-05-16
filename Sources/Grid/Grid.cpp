@@ -110,6 +110,7 @@ void Grid::Erase ()
 {
 	int i, j;
 	numBlackCases = 0;
+	numVoidBoxes = 0;
 
 	for (j = 0; j < mSy; j ++)
 	{
@@ -118,6 +119,62 @@ void Grid::Erase ()
 			Box* box = this->operator ()(i,j);
 			box->MakeLetter ();
 			if (box->IsBloc ()) numBlackCases ++;
+			if (box->IsVoid ()) numVoidBoxes ++;
+		}
+	}
+}
+
+
+// ===========================================================================
+/// \brief		Lock the current content of the grid
+// ===========================================================================
+void Grid::LockContent ()
+{
+	int x, y;
+	int count = 0;
+	numBlackCases = 0;
+	numVoidBoxes = 0;
+
+	for (y = 0; y < mSy; y ++)
+	{
+		for (x = 0; x < mSx; x ++)
+		{
+			Box* box = this->operator ()(x, y);
+
+			// Lock box if it contains something
+			if (box->IsLetter () == false || box->GetLetter () != 0)
+			{
+				box->Lock (true);
+				if (box->IsBloc ()) numBlackCases ++;
+				if (box->IsVoid ()) numVoidBoxes ++;
+			}
+
+			// Otherwise, put number of non locked previous boxes in the 'tag' field
+			else
+			{
+				box->Lock (false);
+				box->tag = count;
+				count ++;
+			}
+		}
+	}
+}
+
+
+
+// ===========================================================================
+/// \brief		Unlock every box
+// ===========================================================================
+void Grid::Unlock ()
+{
+	int x, y;
+
+	for (y = 0; y < mSy; y ++)
+	{
+		for (x = 0; x < mSx; x ++)
+		{
+			Box* box = this->operator ()(x, y);
+			box->Lock (false);
 		}
 	}
 }
@@ -593,21 +650,23 @@ Grid::Space Grid::GetSpace (int x, int y) const
 int Grid::GetFillRate () const
 {
 	int notVoid = 0;
+	int numVoid = 0;
 
 	for (int j = 0; j < mSy; j ++)
 	{
 		for (int i = 0; i < mSx; i ++)
 		{
 			if ( this->operator ()(i,j)->IsBloc ()) notVoid ++;
-			if ( this->operator ()(i,j)->IsLetter ())
+			else if ( this->operator ()(i,j)->IsLetter ())
 			{
 				uint8_t c = (this->operator ()(i,j))->GetLetter ();
 				if (c != 0) notVoid ++;
 			}
+			else numVoid ++;
 		}
 	}
 
-	return (int) (100 * notVoid / (mSx*mSy));
+	return (int) (100 * notVoid / (mSx*mSy - numVoid));
 }
 
 // End

@@ -31,6 +31,14 @@ Assuming CMake and Visual Studio are installed on your machine,
 * Run the command ```cmake --build . --config Release --target install```
 * The DLL should be created in the ```./Binaries/Windows``` directory.
   
+### Compile with CMake on Linux
+
+Assuming CMake in installed on your machine,
+
+* Step in ```cmake``` directory
+* Run the command ```cmake ..\Sources\```
+* Run the command ```cmake --build .```
+
 
 ## Wrappers
 
@@ -40,4 +48,17 @@ Assuming CMake and Visual Studio are installed on your machine,
 
 This class provides the following API:
 
-* **DIC_Clear:** Flush the dictionary content;
+* **dic_clear:** Flush the dictionary content;
+* **dic_add_entries:** Add entries to the dictionary;
+* **dic_find_random_entry:** Find a random entry in the dictionary, matching a mask;
+* **dic_find_entry:** Find a random entry in the dictionary, matching a mask;
+* **dic_gen_num_words:** Return the number of words in the dictionary;
+* **grid_erase:** Erase the grid content;
+* **grid_set_size:** Set the grid size. Content can be lost when shrinking;
+* **grid_set_box:** Set the type of box at a given grid coordinate;
+* **grid_write:** Write a word on the grid;
+* **grid_read:** Read the whole content of the grid;
+* **solver_start:** Start the grid generation process;
+* **solver_step:** Move a few steps in the grid generation process;
+* **solver_stop:** Stop the grid generation process;
+

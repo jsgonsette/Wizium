@@ -124,14 +124,14 @@ class Wizium:
 
 		# Init library once and create one PPMM instance
 		if Wizium._init_done == False:
-			self.version = self._WIZ_Init ()
+			self.version = self._wiz_init ()
 			print ("lPPMM library v{}.{}.{} loaded".format (self.version.major, self.version.minor, self.version.release))
 			if str (self.version.major) + '.' + str (self.version.minor) != __version__:
 				print ("[WARNING] Wrapper version doesn't match loaded library")
 			Wizium._init_done = True
 
 		# Create an instance
-		self._WIZ_CreateInstance ()
+		self._wiz_create_instance ()
 		if self._instance == 0:
 			raise Exception ("lPPMM Library HANDLE could not be created")		
 
@@ -142,11 +142,11 @@ class Wizium:
 	# ============================================================================
 
 		# Destroy PPMM instance
-		self._WIZ_DestroyInstance ()
+		self._wiz_destroy_instance ()
 
 
 	# ============================================================================
-	def DIC_Clear (self):
+	def dic_clear (self):
 		"""Flush the dictionary content"""
 	# ============================================================================
 
@@ -157,7 +157,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def DIC_AddEntries (self, entries):
+	def dic_add_entries (self, entries):
 		"""Add entries to the dictionary
 		
 		entries:		List of strings (must only contain ascii characters)
@@ -187,7 +187,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def DIC_FindRandomEntry (self, mask):
+	def dic_find_random_entry (self, mask):
 		"""Find a random entry in the dictionary, matching a mask
 		
 		mask:		Mask to match. Each letter must either be in ['A'..'Z'] range
@@ -216,7 +216,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def DIC_FindEntry (self, mask, start=None):
+	def dic_find_entry (self, mask, start=None):
 		"""Find a random entry in the dictionary, matching a mask
 		
 		mask:		Mask to match. Each letter must either be in ['A'..'Z'] range
@@ -252,7 +252,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def DIC_GetNumWords (self):
+	def dic_gen_num_words (self):
 		"""Return the number of words in the dictionary"""
 	# ============================================================================
 
@@ -262,7 +262,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def GRID_Erase (self):
+	def grid_erase (self):
 		"""Erase the grid content"""
 	# ============================================================================
 
@@ -272,7 +272,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def GRID_SetSize (self, width, height):
+	def grid_set_size (self, width, height):
 		"""Set the grid size. Content can be lost when shrinking."""
 	# ============================================================================
 
@@ -284,14 +284,24 @@ class Wizium:
 
 
 	# ============================================================================
-	def GRID_SetBox (self, x, y, type):
+	def grid_set_box (self, x, y, type):
 		"""Set the type of box at a given grid coordinate"""
 	# ============================================================================
-		return 
+
+		assert type in ('LETTER', 'VOID', 'BLACK')
+
+		instance = ctypes.c_ulonglong (self._instance)
+		(api, proto) = self._api ["GRID_SetBox"]
+
+		if type == 'LETTER': type_int = 0
+		elif type == 'VOID': type_int = 1
+		elif type == 'BLACK': type_int = 2
+
+		api (instance, x, y, type_int)
 		
 
 	# ============================================================================
-	def GRID_Write (self, x, y, word, dir='H', add_block=False):
+	def grid_write (self, x, y, word, dir='H', add_block=False):
 		"""Write a word on the grid
 		
 		x, y		Location of the first letter
@@ -312,7 +322,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def GRID_Read (self):
+	def grid_read (self):
 		"""Read the whole content of the grid"""
 	# ============================================================================
 
@@ -334,7 +344,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def SOLVER_Start (self, seed=0, black_mode='DIAG', max_black=0, heuristic_level=-1):
+	def solver_start (self, seed=0, black_mode='DIAG', max_black=0, heuristic_level=-1):
 		"""Start the grid generation process
 		
 		seed			Custom seed for the generation process
@@ -368,7 +378,7 @@ class Wizium:
 		
 
 	# ============================================================================
-	def SOLVER_Step (self, max_time_ms=-1, max_steps=-1):
+	def solver_step (self, max_time_ms=-1, max_steps=-1):
 		"""Move a few steps in the grid generation process"""
 	# ============================================================================
 
@@ -382,7 +392,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def SOLVER_Stop (self):
+	def solver_stop (self):
 		"""Stop the grid generation process"""
 	# ============================================================================
 
@@ -398,7 +408,7 @@ class Wizium:
 	# ############################################################################	
 	
 	# ============================================================================
-	def _WIZ_Init (self):
+	def _wiz_init (self):
 	# ============================================================================
 
 		version = Wizium.Version ()
@@ -409,7 +419,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def _WIZ_CreateInstance (self, alphabet_size=0, max_word_length=20):
+	def _wiz_create_instance (self, alphabet_size=0, max_word_length=20):
 	# ============================================================================
 
 		config = Wizium.Config ()
@@ -425,7 +435,7 @@ class Wizium:
 
 
 	# ============================================================================
-	def _WIZ_DestroyInstance (self):
+	def _wiz_destroy_instance (self):
 	# ============================================================================
 
 		instance = ctypes.c_ulonglong (self._instance)

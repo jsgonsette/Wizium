@@ -64,12 +64,15 @@ public :
 	void Grow (uint8_t sx, uint8_t sy);
 	void Draw ();
 	void Erase ();
+	void LockContent ();
+	void Unlock ();
 
 	uint8_t GetWidth () const {return static_cast<uint8_t>(mSx);}
 	uint8_t GetHeight () const { return static_cast<uint8_t>(mSy); }
 	void SetDensityMode (BlocDensityMode density) { this->densityMode = density; }
 
 	int GetNumBlackCases () const {return numBlackCases;}
+	int GetNumVoidBoxes () const { return numVoidBoxes; }
 	int GetFillRate () const;
 
 	void AddBloc (uint8_t x, uint8_t y);
@@ -89,6 +92,7 @@ private :
 	
 	enum BlocDensityMode densityMode;	///< Allowed bloc density
 	int numBlackCases;					///< Total number of black boxes
+	int numVoidBoxes;					///< Total number of void boxes
 };
 
 

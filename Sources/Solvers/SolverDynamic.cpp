@@ -69,7 +69,6 @@ SolverDynamic::~SolverDynamic ()
 // ===========================================================================
 void SolverDynamic::Solve_Start (Grid &grid, const Dictionary &dico)
 {
-	int x, y;
 	int count = 0;
 	Box *box = nullptr;
 
@@ -83,28 +82,7 @@ void SolverDynamic::Solve_Start (Grid &grid, const Dictionary &dico)
 	this->pGrid->SetDensityMode (this->densityMode);
 
 	// Lock non empty boxes
-	for (y = 0; y < mSy; y ++)
-	{
-		for (x = 0; x < mSx; x ++)
-		{
-			box = pGrid->operator ()(x, y);
-
-			// Lock box if it contains something
-			if (box->IsLetter () == false || box->GetLetter () != 0)
-				box->Lock (true);
-
-			// Otherwise, put number of non locked previous boxes in the 'tag' field
-			else
-			{
-				box->tag = count;
-				box->Lock (false);
-				count ++;
-			}
-		}
-	}
-
-	// Reset grid, but locked boxes
-	pGrid->Erase ();
+	pGrid->LockContent ();
 
 	// Get initial number of black boxes
 	initialBlackCases = pGrid->GetNumBlackCases ();
@@ -121,17 +99,7 @@ void SolverDynamic::Solve_Start (Grid &grid, const Dictionary &dico)
 void SolverDynamic::Solve_Stop ()
 {
 	// Unlock all grid boxes	
-	if (pGrid != nullptr)
-	{
-		for (int y = 0; y < mSy; y ++)
-		{
-			for (int x = 0; x < mSx; x ++)
-			{
-				Box* box = pGrid->operator ()(x, y);
-				box->Lock (false);
-			}
-		}
-	}
+	if (pGrid != nullptr) pGrid->Unlock ();
 	
 	this->pDict = nullptr;
 	this->pGrid = nullptr;
@@ -226,6 +194,7 @@ Status SolverDynamic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 		{
 			FreeItems ();
 			pDict = nullptr;
+			pGrid->Erase ();
 			break;
 		}
 
@@ -622,7 +591,7 @@ Grid::Space SolverDynamic::CheckGridBlock (int x, int y)
 
 	// Already a block ?
 	Box *box = pGrid->operator ()(x, y);
-	if (box->IsBloc () == true) return space;
+	if (box->IsBloc () == true || box->IsVoid ()) return space;
 
 	// A letter is already here, we can't put a block
 	if (box->IsLetter () && box->GetLetter () != 0)
@@ -812,7 +781,7 @@ bool SolverDynamic::CheckItemLength (const DynamicItem *pItem)
 
 	// Also possible to push a black box if it already exists 
 	Box *box = pGrid->operator ()(x, y);
-	if (box->IsBloc () == true) return true;
+	if (box->IsBloc () == true || box->IsVoid ()) return true;
 
 	// Fail if not possible to add a single black box
 	if (maxBlackCases == 0) return false;
@@ -834,7 +803,8 @@ bool SolverDynamic::CheckItemLength (const DynamicItem *pItem)
 		int boxNumber = box->tag;
 
 		// - Black boxes fill rate at this point, according to our curve
-		float fillrate = (float)boxNumber / (float)(mSx*mSy - 1 - initialBlackCases);
+		float fillrate = (float)boxNumber / 
+			(float)(mSx*mSy - 1 - initialBlackCases - pGrid->GetNumVoidBoxes ());
 		fillrate = a * fillrate*fillrate + b * fillrate;
 
 		// - Derive max number of black cases up to (x, y)
