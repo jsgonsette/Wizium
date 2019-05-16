@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.0)
 
 #set (CMAKE_BUILD_TYPE Release)
 set (BUILD_SHARED_LIBS TRUE)
