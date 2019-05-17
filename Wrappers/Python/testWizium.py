@@ -23,17 +23,24 @@ __email__ = "jeansebastien.gonsette@gmail.com"
 
 import os
 import re
+import platform
+import random
 from libWizium import Wizium
 
 # ############################################################################	
 
-# Update this path if needed !
-PATH = './../../Binaries/Windows/libWizium_x64.dll'
+# Update those paths if needed !
+if platform.system()=='Linux':
+    PATH = './../../Binaries/Linux/libWizium.so'
+else:
+    PATH = './../../Binaries/Windows/libWizium_x64.dll'
+
 DICO_PATH = './../../Dictionaries/Fr_Simple.txt'
+
 
 # ============================================================================
 def draw (wiz):
-    """Draw the read content, with a very simple formating"""
+    """Draw the grid content, with a very simple formating"""
 # ============================================================================
     lines = wiz.grid_read ()
     for l in lines:
@@ -103,7 +110,7 @@ def solve (wiz, max_black=0):
 # ============================================================================
 
     # Configure the solver
-    wiz.solver_start (seed=5, black_mode='DIAG', max_black=max_black, heuristic_level=2)
+    wiz.solver_start (seed=random.randint(1, 1000000), black_mode='DIAG', max_black=max_black, heuristic_level=2)
     
     # Solve with steps of 500ms max, in order to draw the grid content evolution
     while True:
@@ -112,8 +119,12 @@ def solve (wiz, max_black=0):
         draw (wiz)
         print (status)
 
-        if status.fillRate == 100: break
-        if status.fillRate == 0: break
+        if status.fillRate == 100: 
+            print ("SUCCESS !")
+            break
+        if status.fillRate == 0: 
+            print ("FAILED !")
+            break
     
     # Ensure to release grid content
     wiz.solver_stop ()
@@ -123,17 +134,20 @@ def solve (wiz, max_black=0):
 """Main"""
 # ============================================================================
 
+EXAMPLE = 1
+
 # Create a Wizium instance
 wiz = Wizium (os.path.join (os.getcwd (), PATH))
-# wiz = Wizium ('X:/GenId/6) Web/Github/jsgonsette/Wizium/Projects/VS2017/x64/Debug/libWizium.dll')
 
 # Load the dictionary
 load_dictionary (wiz, DICO_PATH)
 
-# Set a static pattern
-set_grid_2 (wiz)
-draw (wiz)
+if EXAMPLE == 1:
+    # Set a fixed pattern
+    set_grid_1 (wiz)
+    solve (wiz, 0)
 
-# Solve this grid
-solve (wiz, 28)
-draw (wiz)
+elif EXAMPLE == 2:
+    # Dynamic pattern
+    set_grid_2 (wiz)
+    solve (wiz, 30)
