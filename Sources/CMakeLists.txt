@@ -38,6 +38,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
 	message (STATUS "GCC configuration")
     target_compile_options(libWizium PRIVATE -Wall -Wextra)
 	set (PATH ./../Binaries/Linux/)
+	set_target_properties(libWizium PROPERTIES PREFIX "")
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	message (STATUS "Microsoft Visual Studio configuration")
