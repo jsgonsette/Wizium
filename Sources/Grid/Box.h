@@ -44,23 +44,27 @@ public :
 	void MakeLetter ();
 	void MakeVoid ();
 
-	bool IsBloc () const {return mType == 'B';}
-	bool IsLetter () const {return mType == 'L';}
-	bool IsVoid () const {return mType == 'V';}
-	bool IsLocked () const {return mLocked;}
+	bool IsBloc () const {return type == 'B';}
+	bool IsLetter () const {return type == 'L';}
+	bool IsVoid () const {return type == 'V';}
+	bool IsLocked () const {return isLocked;}
 
 	uint8_t GetLetter () const;
 	void SetLetter (uint8_t c);
 
-	int8_t GetCounter () const { return this->mCounter; }
-	void ResetCounter (int8_t v) { this->mCounter = v; }
-	int8_t IncrementCounter () { return ++this->mCounter; }
-	int8_t DecrementCounter() { return --this->mCounter; }
+	int8_t GetCounter () const { return this->counter; }
+	void ResetCounter (int8_t v) { this->counter = v; }
+	int8_t IncrementCounter () { return ++this->counter; }
+	int8_t DecrementCounter() { return --this->counter; }
 
-	uint8_t GetBlocDensity () const { if (mType != 'B') return 0; else return mValue; }
-	void SetBlocDensity (uint8_t density) { if (mType != 'B') return; else mValue = density; }
+	int GetFailCounter () const { return this->failCounter; }
+	void ResetFailCounter () { this->failCounter = 0; }
+	int IncrementFailCounter () { return ++this->failCounter; }
 
-	void Lock (bool state) {mLocked = state;};
+	uint8_t GetBlocDensity () const { if (type != 'B') return 0; else return value; }
+	void SetBlocDensity (uint8_t density) { if (type != 'B') return; else value = density; }
+
+	void Lock (bool state) {isLocked = state;};
 
 	void ResetCandidates (bool state) { candidates.Reset (state); }
 	void SetCandidate (uint8_t c, bool state) { candidates.Set (c, state); }
@@ -72,11 +76,12 @@ public :
 
 private :
 
-	char mType;				///< Box type (letter, void, block)
-	uint8_t mValue;			///< Letter in this box or block local densisty (depending on box purpose)
-	int8_t mCounter;		///< General purpose counter
+	char type;				///< Box type (letter, void, block)
+	uint8_t value;			///< Letter in this box or block local densisty (depending on box purpose)
+	int8_t counter;			///< Counter used to track how many time the same content has been written in this box
+	int failCounter;		///<
 
-	bool mLocked;			///< Content is locked
+	bool isLocked;			///< Content is locked
 
 	LetterCandidates candidates;	///< Letter candidates for this box
 };

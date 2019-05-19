@@ -177,10 +177,7 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 		StaticItem *pItem = &m_pItemList [m_idxCurrentItem];
 
 		// Reset 
-		pItem->word [0] = 0;
-		pItem->prevWord [0] = 0;
-		pItem->firstWord [0] = 0;
-		pItem->ResetCrossCandidates ();
+		pItem->Reset ();
 		LoadCandidatesFromGrid (*pItem);
 
 		// Find a first solution for this item
@@ -592,7 +589,7 @@ bool SolverStatic::CheckItemCross (StaticItem &item, int *pBestPos)
 		if (item.IsCrossTested (i, item.word[i]) == true) continue;
 		
 		// Update mask with the letter that would be at the intersection
-		// (pItem is not on the grid, so the mask should be updated)
+		// ('item' is not on the grid, so the mask should be updated)
 		if (m_crossMasks [i].len <= 1) continue;
 		m_crossMasks [i].mask [m_crossMasks [i].backOffset] = item.word [i];
 
@@ -605,6 +602,9 @@ bool SolverStatic::CheckItemCross (StaticItem &item, int *pBestPos)
 
 		// Invalidate the failing letter if no possibility
 		item.SetCandidate (i, item.word [i], false);
+
+		// Propagate this failure around in the column
+		this->pGrid->FailAtColumn (item.posX + i, item.posY);
 	
 		// Return best position
 		if (pBestPos != nullptr && *pBestPos < i-1) *pBestPos = i-1;

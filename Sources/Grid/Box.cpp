@@ -38,10 +38,11 @@
 Box::Box ()
 {
 	// Empty letter
-	mType = 'L';
-	mValue = 0;
-	mCounter = 0;
-	mLocked = false;
+	type = 'L';
+	value = 0;
+	counter = 0;
+	failCounter = 0;
+	isLocked = false;
 	tag = 0;
 
 	// All letters are valid candidates
@@ -54,10 +55,10 @@ Box::Box ()
 // ===========================================================================
 void Box::MakeBloc ()
 {
-	if (mLocked == true) return;
-	mType = 'B';
-	mValue = 0;
-	mCounter = 0;
+	if (isLocked == true) return;
+	type = 'B';
+	value = 0;
+	counter = 0;
 }
 
 
@@ -66,10 +67,10 @@ void Box::MakeBloc ()
 // ===========================================================================
 void Box::MakeLetter()
 {
-	if (mLocked == true) return;
-	mType = 'L';
-	mValue = 0;
-	mCounter = 0;
+	if (isLocked == true) return;
+	type = 'L';
+	value = 0;
+	counter = 0;
 }
 
 
@@ -78,10 +79,10 @@ void Box::MakeLetter()
 // ===========================================================================
 void Box::MakeVoid ()
 {
-	if (mLocked == true) return;
-	mType = 'V';
-	mValue = 0;
-	mCounter = 0;
+	if (isLocked == true) return;
+	type = 'V';
+	value = 0;
+	counter = 0;
 }
 
 
@@ -92,8 +93,8 @@ void Box::MakeVoid ()
 // ===========================================================================
 uint8_t Box::GetLetter () const
 {
-	if (mType != 'L') return 0;
-	return mValue;
+	if (type != 'L') return 0;
+	return value;
 }
 
 
@@ -104,10 +105,10 @@ uint8_t Box::GetLetter () const
 // ===========================================================================
 void Box::SetLetter (uint8_t c)
 {
-	if (mLocked == true) return;
-	if (mType != 'L') return;
+	if (isLocked == true) return;
+	if (type != 'L') return;
 	
-	mValue = c;
+	value = c;
 }
 
 

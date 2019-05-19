@@ -79,6 +79,7 @@ public :
 	void RemoveBloc (uint8_t x, uint8_t y);
 	void AddWord (uint8_t x, uint8_t y, char dir, const uint8_t* word);
 	void RemoveWord (uint8_t x, uint8_t y, char dir);
+	void FailAtColumn (uint8_t x, uint8_t y);
     
 	bool CheckBlocDensity (uint8_t x, uint8_t y) const;
 	unsigned char BuildMask (uint8_t mask [], uint8_t x, uint8_t y, char dir, bool goBack) const;	

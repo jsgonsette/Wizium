@@ -390,6 +390,29 @@ void Grid::RemoveWord (uint8_t x, uint8_t y, char dir)
 
 
 // ===========================================================================
+// ===========================================================================
+void Grid::FailAtColumn (uint8_t x, uint8_t y)
+{
+	int py = y;
+
+	while (--py >= 0)
+	{
+		Box* box = this->operator () (x, py);
+		if (box->IsLetter () == false) break;
+		if (box->GetLetter () > 0) box->IncrementFailCounter ();
+	}
+	
+	py = y;
+	while (++py < this->mSy)
+	{
+		Box* box = this->operator () (x, py);
+		if (box->IsLetter () == false) break;
+		if (box->GetLetter () > 0) box->IncrementFailCounter ();
+	}
+}
+
+
+// ===========================================================================
 /// \brief		Check if it is possible to add a black box at a given location
 ///				given the grid black box density
 ///

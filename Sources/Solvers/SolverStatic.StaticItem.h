@@ -66,6 +66,9 @@ public:
 	LetterCandidates crossTestedCandidates [MAX_GRID_SIZE];	///< Cross-tested letters for each item box
 	int bestPos;					///< Best letter we could cross validate, in case of failure when searching a word.
 
+	int failCounter;
+	int failTotCounter;
+
 };
 
 #endif

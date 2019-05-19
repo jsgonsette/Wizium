@@ -36,8 +36,20 @@
 // ===========================================================================
 SolverStatic::StaticItem::StaticItem ()
 {
+	word [0] = 0;
+	prevWord [0] = 0;
+	firstWord [0] = 0;
+
+	processOrder = -1;
 	connectionStrength = 0;
-	Reset ();
+
+	length = 0;
+	posX = 0;
+	posY = 0;
+	bestPos = -1;
+
+	failCounter = 0;
+	failTotCounter = 0;
 }
 
 
@@ -46,7 +58,6 @@ SolverStatic::StaticItem::StaticItem ()
 // ===========================================================================
 SolverStatic::StaticItem::~StaticItem ()
 {
-	Reset ();
 }
 
 
@@ -55,16 +66,12 @@ SolverStatic::StaticItem::~StaticItem ()
 // ===========================================================================
 void SolverStatic::StaticItem::Reset ()
 {
-	ResetCandidates ();
-
 	word [0] = 0;
 	prevWord [0] = 0;
-	length = 0;
-	posX = 0;
-	posY = 0;
-
-	processOrder = -1;
-	bestPos = -1;
+	firstWord [0] = 0;
+	failCounter = 0;
+	failTotCounter = 0;
+	ResetCrossCandidates ();
 }
 
 
