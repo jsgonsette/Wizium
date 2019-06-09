@@ -62,7 +62,6 @@ public :
 	const Box* operator () (int x, int y) const;
 
 	void Grow (uint8_t sx, uint8_t sy);
-	void Draw ();
 	void Erase ();
 	void LockContent ();
 	void Unlock ();

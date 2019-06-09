@@ -91,7 +91,6 @@ inline const Box* Grid::operator () (int x, int y) const
 ///
 /// \param		sx	New grid horizontal size
 /// \param		sy	New grid vertical size
-
 // ===========================================================================
 void Grid::Grow (uint8_t sx, uint8_t sy)
 {
@@ -161,7 +160,6 @@ void Grid::LockContent ()
 }
 
 
-
 // ===========================================================================
 /// \brief		Unlock every box
 // ===========================================================================
@@ -176,32 +174,6 @@ void Grid::Unlock ()
 			Box* box = this->operator ()(x, y);
 			box->Lock (false);
 		}
-	}
-}
-
-
-// ===========================================================================
-/// \brief		Debug print the grid content in the console
-// ===========================================================================
-void Grid::Draw ()
-{
-	printf ("\n\nGrille : \n\n ");
-
-	for (int j = 0; j < mSy; j ++)
-	{
-		for (int i = 0; i < mSx; i ++)
-		{
-			if ( this->operator ()(i,j)->IsBloc ()) printf ("#  ");
-			if ( this->operator ()(i,j)->IsVoid ()) printf ("   ");
-			if ( this->operator ()(i,j)->IsLetter ())
-			{
-				uint8_t c = (this->operator ()(i,j))->GetLetter ();
-				if (c != 0) printf ("%c  ", c + 'A' - 1);
-				else printf (".  ");
-			}
-		}
-
-		printf ("\n\n ");
 	}
 }
 
@@ -390,6 +362,10 @@ void Grid::RemoveWord (uint8_t x, uint8_t y, char dir)
 
 
 // ===========================================================================
+/// \brief	Progagate a failure (when solving) from a given coordinate to 
+///			all other visible boxes in the same column
+///
+/// \param		x,y		Location on grid
 // ===========================================================================
 void Grid::FailAtColumn (uint8_t x, uint8_t y)
 {

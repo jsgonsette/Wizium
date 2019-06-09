@@ -47,9 +47,6 @@ SolverStatic::StaticItem::StaticItem ()
 	posX = 0;
 	posY = 0;
 	bestPos = -1;
-
-	failCounter = 0;
-	failTotCounter = 0;
 }
 
 
@@ -69,8 +66,6 @@ void SolverStatic::StaticItem::Reset ()
 	word [0] = 0;
 	prevWord [0] = 0;
 	firstWord [0] = 0;
-	failCounter = 0;
-	failTotCounter = 0;
 	ResetCrossCandidates ();
 }
 
@@ -80,7 +75,7 @@ void SolverStatic::StaticItem::Reset ()
 // ===========================================================================
 void SolverStatic::StaticItem::ResetCandidates ()
 {
-	// All letter boxes in the slot are valid candidates
+	// All letter boxes in the slot become valid candidates
 	for (int i = 0; i < MAX_GRID_SIZE; i++) {
 		possibleLetters [i].Reset (true);
 	}

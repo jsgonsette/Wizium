@@ -64,9 +64,14 @@ struct S_WordLeaf
 
 // ===========================================================================
 /// \brief		Constructor
+///
+/// \param		_alphabetSize		Number of symbol in the alphabet.
+///									Should be 26 for a standard alphabet but other values are possible (not really tested)
+/// \param		_maxWordSize		Length of the longest word to handle
 // ===========================================================================
 Dictionary::Dictionary (int _alphabetSize, int _maxWordSize) : alphabetSize (_alphabetSize), maxWordSize (_maxWordSize)
 {
+	// Check configuration
 	if (maxWordSize <= 0 || maxWordSize > MAX_WORD_LENGTH) maxWordSize = MAX_WORD_LENGTH;
 	if (alphabetSize > 64) alphabetSize = 64;
 	if (alphabetSize <= 0) alphabetSize = 26;
@@ -80,7 +85,7 @@ Dictionary::Dictionary (int _alphabetSize, int _maxWordSize) : alphabetSize (_al
 	numWordLeafs = 0;
 	numWordNodes = 0;
 
-	// Empty dictionary
+	// Flush the dictionary
 	Clear ();
 }
 
@@ -96,6 +101,11 @@ Dictionary::~Dictionary ()
 
 
 // ===========================================================================
+/// \brief	Compare two words to determine which ones follows the other in the alpabetical order
+///
+/// \param	word1, word2		Words to compare
+///
+/// \return	-1, 0, +1, depending if word1 is less, equal or greater than word2
 // ===========================================================================
 int Dictionary::Compare (const uint8_t word1 [], const uint8_t word2 []) const
 {

@@ -53,21 +53,23 @@ public:
 	
 public:
 
+	// Dynamic info used when solving
 	uint8_t word [MAX_WORD_LENGTH + 1];			///< Current value for the word in the slot	
 	uint8_t prevWord [MAX_WORD_LENGTH + 1];		///< Previous word we could successfully put on the grid	
 	uint8_t firstWord [MAX_WORD_LENGTH + 1];	///< First word when we start searching a new value, to detect we went around the dictionary
 	
+	LetterCandidates possibleLetters[MAX_GRID_SIZE];		///< Letter candidates for each item box
+	LetterCandidates crossTestedCandidates[MAX_GRID_SIZE];	///< Cross-tested letters for each item box
+
+	// Dynamic info used to backtrack
+	int bestPos;					///< Best letter we could cross validate, in case of failure when searching a word.
+	bool visibility;				///< Is this word visible to any following word impacted by a failure
+
+	// Static info set once before solving
 	int connectionStrength;			///< How much this word connects with previous words in the resolution list
 	int processOrder;				///< Backtracking processing order
 	uint8_t posX, posY;				///< Item location on grid	
 	uint8_t length;					///< Item length
-
-	LetterCandidates possibleLetters [MAX_GRID_SIZE];		///< Letter candidates for each item box
-	LetterCandidates crossTestedCandidates [MAX_GRID_SIZE];	///< Cross-tested letters for each item box
-	int bestPos;					///< Best letter we could cross validate, in case of failure when searching a word.
-
-	int failCounter;
-	int failTotCounter;
 
 };
 

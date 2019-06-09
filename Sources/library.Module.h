@@ -69,6 +69,8 @@ private:
 
 	ISolver* currentSolver;		///< Pointer to current solver
 
+	const Module *next;			///< For modules chaining
+
 private:
 
 

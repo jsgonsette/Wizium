@@ -37,6 +37,7 @@ Library::Module::Module (const Config& config) : dictionary (config.alphabetSize
 	alphabetSize = config.alphabetSize;
 	maxWordLength = config.maxWordLength;
 	currentSolver = &solverDyn;
+	next = nullptr;
 }
 
 

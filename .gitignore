@@ -11,6 +11,13 @@
 *.iobj
 *.exp
 
+# Project user configuration
+*.filters
+*.user
+*.opendb
+*.vscode
+*.vs
+
 # Precompiled Headers
 *.gch
 *.pch

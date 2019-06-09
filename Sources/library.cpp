@@ -21,6 +21,7 @@
 /// \brief	Singleton holding all the Wizium instances
 // ###########################################################################
 
+#include <assert.h>
 #include "library.h"
 #include "library.Module.h"
 
@@ -56,7 +57,11 @@ Library::Module* Library::CreateInstance (const Config& config)
 
 	// Create the module
 	module = new Module (config);
+
+	// Chaining
+	module->next = this->modules;
 	this->modules = module;
+
 	return module;
 }
 
@@ -68,7 +73,11 @@ Library::Module* Library::CreateInstance (const Config& config)
 // ===========================================================================
 void Library::DestroyInstance (Module* module)
 {
-	delete module;
+	const Module* p = this->modules;
+	while (p && p != module) p = p->next;
+
+	assert (p != nullptr);
+	if (p) delete module;
 }
 
 
@@ -78,6 +87,13 @@ void Library::DestroyInstance (Module* module)
 Library::~Library ()
 {
 	// delete all modules
+	const Module* p = this->modules;
+	while (p != nullptr)
+	{
+		const Module*pn = p->next;
+		delete p;
+		p = pn;
+	}
 }
 
 

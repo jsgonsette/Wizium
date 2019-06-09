@@ -73,9 +73,9 @@ private:
 
 	void AddCurrentItem ();
 	void BackTrack ();
-
+	
 	bool ChangeItem (StaticItem &item, int posToChange, int *pValidatedPos, unsigned int* pNumAttempts);
-	bool ChangeItemWord (StaticItem &item, uint8_t mask [], int unvalidatedIdx);
+	bool ChangeItemWord (StaticItem &item, uint8_t mask [], int unvalidatedIdx, bool strict);
 	bool CheckItemCross (StaticItem &item, int *pBestPos);
 	void BuildCrossMasks (StaticItem &item);
 
@@ -97,11 +97,11 @@ private:
 
 private:
 
-	StaticItem* m_pItemList;				///< All the horizontal slots to resolve
+	StaticItem* items;						///< All the horizontal slots to resolve
 	CrossMask m_crossMasks [MAX_GRID_SIZE];	///< Cross masks for the current item to solve
 	
-	int m_numItems;				///< Number of words to place on the grid
-	int m_idxCurrentItem;		///< Current slot we are currently resolving											
+	int numItems;							///< Number of words to place on the grid
+	int idxCurrentItem;						///< Current slot we are currently resolving											
 	
 	// Heurestic
 	bool m_heurestic;

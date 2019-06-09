@@ -60,9 +60,9 @@ int Len2 (uint8_t* s)
 SolverStatic::SolverStatic ()
 {
 	seed = 0;
-	m_pItemList = nullptr;
-	m_numItems = -1;		
-	m_idxCurrentItem = -1;
+	items = nullptr;
+	numItems = -1;		
+	idxCurrentItem = -1;
 
 	m_heurestic = true;
 	m_backTreshold = 0;
@@ -74,7 +74,7 @@ SolverStatic::SolverStatic ()
 // ===========================================================================
 SolverStatic::~SolverStatic ()
 {
-	if (m_pItemList != nullptr) delete [] m_pItemList;
+	if (items != nullptr) delete [] items;
 }
 
 
@@ -105,8 +105,8 @@ void SolverStatic::Solve_Stop ()
 	this->pDict = nullptr;
 	this->pGrid = nullptr;
 	this->steps = 0;
-	m_numItems = -1;
-	m_idxCurrentItem = -1;
+	numItems = -1;
+	idxCurrentItem = -1;
 }
 
 
@@ -135,9 +135,9 @@ void SolverStatic::Solve_Start (Grid &grid, const Dictionary &dico)
 	this->pGrid->LockContent ();
 
 	// Establish a static ordered list of word slots for whose we must find a solution
-	if (m_pItemList != nullptr) delete [] m_pItemList;
+	if (items != nullptr) delete [] items;
 	BuildWordList ();
-	m_idxCurrentItem = 0;
+	idxCurrentItem = 0;
 
 	// Init step counter and rng
 	this->steps = 0;
@@ -163,6 +163,7 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 	// Get time in
 	auto start = std::chrono::system_clock::now ();
 
+	// If we failed or stopped previously 
 	if (pGrid == nullptr || pDict == nullptr)
 	{
 		status.counter = this->steps;
@@ -171,10 +172,10 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 	}
 
 	// Main search loop, we have finished when we have found something for every slots in our list
-	while (m_idxCurrentItem < m_numItems)
+	while (idxCurrentItem < numItems)
 	{		
 		// Get item to solve during this iteration
-		StaticItem *pItem = &m_pItemList [m_idxCurrentItem];
+		StaticItem *pItem = &items [idxCurrentItem];
 
 		// Reset 
 		pItem->Reset ();
@@ -192,7 +193,7 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 		if (result == false) BackTrack ();
 
 		// Backtracking failed ?
-		if (m_idxCurrentItem < 0)
+		if (idxCurrentItem < 0)
 		{
 			pDict = nullptr;
 			pGrid->Erase ();
@@ -240,75 +241,85 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 // ===========================================================================
 void SolverStatic::BackTrack ()
 {
-	uint8_t mask [MAX_GRID_SIZE + 1];
+	uint8_t mask[MAX_GRID_SIZE + 1];
 
 	StaticItem *next = nullptr;
-	StaticItem *target = &m_pItemList [m_idxCurrentItem];
+	StaticItem *target = &items[idxCurrentItem];
 	int targetCol = target->posX + target->bestPos + 1;
+	int idx = idxCurrentItem;
 
+	// Reset visibility with the failing word
+	for (int i = 0; i < idxCurrentItem; i++) items[i].visibility = false;
+	items[idxCurrentItem].visibility = true;
+
+	// Look for the next word to change
 	while (next == nullptr)
 	{
-		// Remove items up to a given point where we can interact with a given target item
+		// Remove items up to a given point 
 		do
 		{
-			m_idxCurrentItem --;
-			if (m_idxCurrentItem < 0) break;
-			pGrid->RemoveWord (m_pItemList [m_idxCurrentItem].posX, m_pItemList [m_idxCurrentItem].posY, 'H');
+			// Remove word from grid and prepare to use it
+			idx--;
+			if (idx < 0) break;
+			pGrid->RemoveWord (items[idx].posX, items[idx].posY, 'H');
+			next = &items[idx];
 
-			// Does this new word interact with our target ?
-			// - build interaction mask. Skip directly if no interaction at all
-			next = &m_pItemList [m_idxCurrentItem];
-			if (AreDependant (*next, *target, mask) == 0) continue;
-
-			// - Check case where we want direct connection with 'targetCol'
-			if (targetCol >= 0)
+			// If we look for strong interaction with failing item on a specific column
+			if (target != nullptr)
 			{
-				// Scan positions up to the target column. Strong interaction
-				// if we have visibility for any one of them.
+				AreDependant (*next, *target, mask);
+
 				bool strongInteraction = false;
-				for (int i = targetCol; i >= next->posX; i --)
+				for (int i = targetCol; i >= next->posX; i--)
 				{
-					if (mask [i - next->posX] == '*')
+					if (mask[i - next->posX] == '*')
 					{
 						strongInteraction = true;
 						targetCol = i;
 						break;
 					}
 				}
-				if (strongInteraction) break;
+				if (strongInteraction) break;        
 			}
 
-			// - otherwise we are happy with only weak interaction. 
+			// Otherwise, we just seek for weak interaction with any visible item
 			else
 			{
-				// Ensure the part of the next item we update still interact
-				targetCol = next->length;
-				while (mask [--targetCol] == '.');
-				targetCol += next->posX;
-				break;
+				// Check if 'idx' see any of the following visible items
+				int i;
+				for (i = idx + 1; i <= idxCurrentItem && items[i].visibility; i ++)
+					if (AreDependant (*next, items[i], mask)) break;
+				if (i <= idxCurrentItem) break;
 			}
 		} 
 		while (true);
-		if (m_idxCurrentItem < 0) break;
+		
+		// Failed at finding an item that has an impact on 'idxCurrentItem' ?
+		if (idx < 0)
+		{
+			idxCurrentItem = -1;
+			break;
+		}
 
-		// Now try to change the word. We can force to change length
+		// Otherwise tag the one we have found
+		next->visibility = true;
+
+		// Now try to change it. 
 		int valCol;
 		unsigned int counter;
 		bool r = ChangeItem (*next, targetCol, &valCol, &counter);
+		
+		// No more target
+		target = nullptr;
+		targetCol = -1;
 
 		// Update counter and candidates
 		this->steps += counter;
 		SaveCandidatesToGrid (*next);
 
 		// Failed ?
-		if (r == false)
-		{
-			target = next;
-			next = nullptr;
-
-			if (target->word [0] == 0) targetCol = -1;
-			else targetCol = valCol +1;
-		}
+		if (r == false) next = nullptr;
+		else idxCurrentItem = idx;
 	}
 
 }
@@ -349,7 +360,7 @@ bool SolverStatic::ChangeItem (StaticItem &item, int colToChange, int *pValidate
 
 		// Find a possible word, given the mask and the letter candidates.
 		// We can force a given letter to change
-		result = ChangeItemWord (item, mask, unvalidatedIdx);
+		result = ChangeItemWord (item, mask, unvalidatedIdx, false);
 		unvalidatedIdx = -1;
 
 		// We found a candidate
@@ -380,7 +391,7 @@ bool SolverStatic::ChangeItem (StaticItem &item, int colToChange, int *pValidate
 ///
 /// \return			True in case of success
 // ===========================================================================
-bool SolverStatic::ChangeItemWord (StaticItem &item, uint8_t mask [], int unvalidatedIdx)
+bool SolverStatic::ChangeItemWord (StaticItem &item, uint8_t mask [], int unvalidatedIdx, bool strict)
 {
 	uint8_t letterToChange;
 	bool loopStatus = false;
@@ -435,7 +446,7 @@ bool SolverStatic::ChangeItemWord (StaticItem &item, uint8_t mask [], int unvali
 
 		// Check the letter to change actually changed.
 		// There is no guarantee, for example: if we must change 'A' in 'SABLER', we could still get 'TABLER'
-		if (unvalidatedIdx >= 0 && letterToChange == item.word [unvalidatedIdx]) continue;
+		if (unvalidatedIdx >= 0 && strict && letterToChange == item.word [unvalidatedIdx]) continue;
 
 		// Check the word is not already on the grid (TODO)
 		//if (item.length > 1);
@@ -456,11 +467,11 @@ bool SolverStatic::ChangeItemWord (StaticItem &item, uint8_t mask [], int unvali
 void SolverStatic::AddCurrentItem ()
 {	
 	// Put the word on the grid
-	StaticItem *pItem = &m_pItemList [m_idxCurrentItem];
+	StaticItem *pItem = &items [idxCurrentItem];
 	pGrid->AddWord (pItem->posX, pItem->posY, 'H', pItem->word);
 
 	// For each updated letter, reset letter candidates on the cross boxes
-	ResetCandidatesAround (m_pItemList [m_idxCurrentItem]);
+	ResetCandidatesAround (items [idxCurrentItem]);
 
 	// Save new reference to keep track of updated letters
 	memcpy (pItem->prevWord, pItem->word, pItem->length+1);
@@ -469,7 +480,7 @@ void SolverStatic::AddCurrentItem ()
 	pItem->bestPos = -1;
 
 	// Move on next item in our list, no more failing item
-	m_idxCurrentItem ++;
+	idxCurrentItem ++;
 }
 
 
@@ -654,11 +665,11 @@ void SolverStatic::BuildWordList ()
 {
 	// Build horizontal slots list
 	// First call enable to know the number of slots
-	m_numItems = BuildWords (nullptr, 0);
+	numItems = BuildWords (nullptr, 0);
 
 	// Allocate memory and actually build the list
-	m_pItemList = new StaticItem [m_numItems];
-	BuildWords (m_pItemList, m_numItems);
+	items = new StaticItem [numItems];
+	BuildWords (items, numItems);
 
 	// Compute list order
 	int idxLast = -1;
@@ -668,30 +679,27 @@ void SolverStatic::BuildWordList ()
 		// Find a wor to start if needed
 		if (idxLast < 0)
 		{
-			idxLast = FindWordToStart (m_pItemList, m_numItems);
+			idxLast = FindWordToStart (items, numItems);
 			if (idxLast < 0) break;
 		}
 
 		// Or find a next one
-		else idxLast = FindWordNext (m_pItemList, m_numItems);		
+		else idxLast = FindWordNext (items, numItems);		
 		if (idxLast < 0) break;
 
 		// Set processing order
-		m_pItemList [idxLast].processOrder = processOrder ++;
+		items [idxLast].processOrder = processOrder ++;
 
 		// Update strength of all the words not already selected
-		for (int i = 0; i < m_numItems; i++)
+		for (int i = 0; i < numItems; i++)
 		{
-			if (m_pItemList [i].processOrder >= 0) continue;
-			m_pItemList [i].connectionStrength += AreDependant (m_pItemList [idxLast], m_pItemList [i], nullptr);
+			if (items [i].processOrder >= 0) continue;
+			items [i].connectionStrength += AreDependant (items [idxLast], items [i], nullptr);
 		}
 	} 
 
 	// Sort word list according to their process order
-	SortWordList (m_pItemList, m_numItems);
-
-	// Exclude words already on the grid from the list
-	/*ExcludeDefinedWords (m_pItemList, m_numItems); */
+	SortWordList (items, numItems);
 }
 
 

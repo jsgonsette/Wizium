@@ -520,7 +520,7 @@ bool SolverDynamic::ChangeItemWord (DynamicItem *pItem, uint8_t mask [], int unv
 			(pDict->Compare (pItem->word, pItem->firstWord) >= 0)) return false;
 
 		// Check the word is not already on the grid
-		// TBW
+		/// \todo
 
 		// All conditions match
 		break;
@@ -694,7 +694,7 @@ int SolverDynamic::GetInitialLength (int row, int maxLength)
 
 
 // ===========================================================================
-/// \brief	Check if pushing a word on the grid is possible, by checking
+/// \brief	Verify pushing a word on the grid is possible, by checking
 ///			it is still possible to put at least one crossed-word at every
 ///			letter position
 ///
