@@ -79,7 +79,7 @@ private :
 	char type;				///< Box type (letter, void, block)
 	uint8_t value;			///< Letter in this box or block local densisty (depending on box purpose)
 	int8_t counter;			///< Counter used to track how many time the same content has been written in this box
-	int failCounter;		///<
+	int failCounter;		///< Counter used to track how many time this box is implicated in a failure
 
 	bool isLocked;			///< Content is locked
 

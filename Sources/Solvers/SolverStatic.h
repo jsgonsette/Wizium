@@ -73,6 +73,7 @@ private:
 
 	void AddCurrentItem ();
 	void BackTrack ();
+	int BackTrackStep (int idxTarget, int& targetCol, int idx);
 	
 	bool ChangeItem (StaticItem &item, int posToChange, int *pValidatedPos, unsigned int* pNumAttempts);
 	bool ChangeItemWord (StaticItem &item, uint8_t mask [], int unvalidatedIdx, bool strict);

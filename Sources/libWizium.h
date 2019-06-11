@@ -27,7 +27,7 @@
 
 constexpr auto VER_MAJOR = 1;
 constexpr auto VER_MINOR = 0;
-constexpr auto VER_RELEASE = 0;
+constexpr auto VER_RELEASE = 1;
 
 // ###########################################################################
 //

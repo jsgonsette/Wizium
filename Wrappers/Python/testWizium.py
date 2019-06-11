@@ -25,6 +25,7 @@ import os
 import re
 import platform
 import random
+import time
 from libWizium import Wizium
 
 # ############################################################################	
@@ -119,7 +120,7 @@ def load_dictionary (wiz, dico_path):
 
 
 # ============================================================================
-def solve (wiz, max_black=0, seed=0):
+def solve (wiz, max_black=0, seed=1):
     """Solve the grid
         
     wiz         Wizium instance
@@ -132,10 +133,12 @@ def solve (wiz, max_black=0, seed=0):
 
     # Configure the solver
     wiz.solver_start (seed=seed, black_mode='DIAG', max_black=max_black, heuristic_level=2)
+    tstart = time.time ()
     
     # Solve with steps of 500ms max, in order to draw the grid content evolution
     while True:
-        status = wiz.solver_step (max_time_ms=500) 
+        # status = wiz.solver_step (max_time_ms=500) 
+        status = wiz.solver_step (max_steps=1000000) 
 
         draw (wiz)
         print (status)
@@ -149,6 +152,10 @@ def solve (wiz, max_black=0, seed=0):
     
     # Ensure to release grid content
     wiz.solver_stop ()
+    
+    tend = time.time ()
+    print ("Compute time: {:.01f}s".format (tend-tstart))
+
 
 
 # ============================================================================
@@ -203,3 +210,4 @@ elif EXAMPLE == 3:
     wiz.grid_set_size (9,9)
     solve (wiz, 0)
 
+exit ()

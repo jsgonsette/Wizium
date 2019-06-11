@@ -29,25 +29,6 @@
 #include "SolverStatic.StaticItem.h"
 #include "Dictionary/Dictionary.h"
 
-
-// ===========================================================================
-// D E F I N E
-// ===========================================================================
-
-
-// ===========================================================================
-// T Y P E S
-// ===========================================================================
-
-
-int Len2 (uint8_t* s)
-{
-	int len = -1;
-	while (s[++len] != 0);
-	return len;
-}
-
-
 // ###########################################################################
 //
 // P U B L I C
@@ -232,86 +213,40 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 
 // ===========================================================================
 /// \brief	Find a backtrack point and restore the grid at that point
-///
-/// \param		bestPos			Best letter index achieved for the current item before failing
-/// \param[out]	pIdxToChange	Letter index of the new current item that must change
-/// \param[out]	pmask			New current item mask
-///
-///	\return		New current item (Null if we cannot backtrack any further)
 // ===========================================================================
 void SolverStatic::BackTrack ()
 {
 	uint8_t mask[MAX_GRID_SIZE + 1];
 
 	StaticItem *next = nullptr;
-	StaticItem *target = &items[idxCurrentItem];
-	int targetCol = target->posX + target->bestPos + 1;
-	int idx = idxCurrentItem;
+	StaticItem *failItem = &items[idxCurrentItem];
+	int targetCol = failItem->posX + failItem->bestPos + 1;
+	int idx = this->idxCurrentItem;
+	int idxTarget = this->idxCurrentItem;
 
 	// Reset visibility with the failing word
 	for (int i = 0; i < idxCurrentItem; i++) items[i].visibility = false;
-	items[idxCurrentItem].visibility = true;
+	items [idxCurrentItem].visibility = true;
 
 	// Look for the next word to change
 	while (next == nullptr)
 	{
-		// Remove items up to a given point 
-		do
-		{
-			// Remove word from grid and prepare to use it
-			idx--;
-			if (idx < 0) break;
-			pGrid->RemoveWord (items[idx].posX, items[idx].posY, 'H');
-			next = &items[idx];
-
-			// If we look for strong interaction with failing item on a specific column
-			if (target != nullptr)
-			{
-				AreDependant (*next, *target, mask);
-
-				bool strongInteraction = false;
-				for (int i = targetCol; i >= next->posX; i--)
-				{
-					if (mask[i - next->posX] == '*')
-					{
-						strongInteraction = true;
-						targetCol = i;
-						break;
-					}
-				}
-				if (strongInteraction) break;        
-			}
-
-			// Otherwise, we just seek for weak interaction with any visible item
-			else
-			{
-				// Check if 'idx' see any of the following visible items
-				int i;
-				for (i = idx + 1; i <= idxCurrentItem && items[i].visibility; i ++)
-					if (AreDependant (*next, items[i], mask)) break;
-				if (i <= idxCurrentItem) break;
-			}
-		} 
-		while (true);
-		
-		// Failed at finding an item that has an impact on 'idxCurrentItem' ?
+		// Try to backtrack 
+		idx = BackTrackStep (idxTarget, targetCol, idx);
 		if (idx < 0)
 		{
 			idxCurrentItem = -1;
 			break;
 		}
 
-		// Otherwise tag the one we have found
-		next->visibility = true;
-
-		// Now try to change it. 
+		// Now try to change the item we went back to. 
 		int valCol;
 		unsigned int counter;
+		next = &items[idx];
 		bool r = ChangeItem (*next, targetCol, &valCol, &counter);
 		
 		// No more target
-		target = nullptr;
-		targetCol = -1;
+		idxTarget = targetCol = -1;
 
 		// Update counter and candidates
 		this->steps += counter;
@@ -321,7 +256,68 @@ void SolverStatic::BackTrack ()
 		if (r == false) next = nullptr;
 		else idxCurrentItem = idx;
 	}
+}
 
+
+// ===========================================================================
+/// \brief	Backtrack until we remove a word that has visibility, either
+///			on a given target (idxTarget, targetCol), or on any other items
+///			that has weak visibility on 'idxCurrentItem'
+///
+/// \param	idxTarget		Index of the element we want direct visibility to
+///							-1: if no direct visibility wanted. In that case
+///							we just check the 'visibility' flag of any 
+/// \param	targetCol		If 'idxTarget' defined, column that must be visible
+///							At return, actual value of the column to consider (maybe lesser in case of occlusion)
+/// \param	idx				Current item to start from 
+///
+/// \return	Index of next item to change
+// ===========================================================================
+int SolverStatic::BackTrackStep (int idxTarget, int& targetCol, int idx)
+{
+	uint8_t mask[MAX_GRID_SIZE + 1];
+	StaticItem *target = (idxTarget >= 0) ? &items[idxTarget] : nullptr;
+
+	// Remove items up to a given point 
+	while (--idx >= 0)
+	{
+		// Remove word from grid and prepare to use it
+		pGrid->RemoveWord (items[idx].posX, items[idx].posY, 'H');
+		StaticItem *next = &items[idx];
+
+		// If we look for strong interaction with a target word
+		if (target != nullptr)
+		{
+			AreDependant (*next, *target, mask);
+
+			// Strong interaction if any column up to 'targetCol' is visible
+			bool strongInteraction = false;
+			for (int i = targetCol; i >= next->posX; i--)
+			{
+				if (mask[i - next->posX] == '*')
+				{
+					strongInteraction = true;
+					targetCol = i;
+					break;
+				}
+			}
+			if (strongInteraction) break;
+		}
+
+		// Otherwise, we just seek for weak interaction with any visible item
+		else
+		{
+			// Check if 'idx' see any of the following visible items
+			int i;
+			for (i = idx + 1; i <= idxCurrentItem && items [i].visibility; i++)
+				if (AreDependant (*next, items [i], mask)) break;
+			if (i <= idxCurrentItem) break;
+		}
+	}
+
+	// Set the visibility flag of the item we have found
+	if (idx >= 0) items [idx].visibility = true;
+	return idx;
 }
 
 
@@ -644,7 +640,9 @@ void SolverStatic::BuildCrossMasks (StaticItem &item)
 
 		// Compute mask for the crossword, along with its offset relative to 'item'
 		m_crossMasks [i].backOffset = pGrid->BuildMask (m_crossMasks [i].mask, x, y, 'V', true);
-		m_crossMasks [i].len = Len2 (m_crossMasks [i].mask);
+		int len = -1;
+		while (m_crossMasks [i].mask [++len]);
+		m_crossMasks [i].len = len;
 
 		// Check the crossword is not already completely defined, if so skip it
 		int j = 0;
@@ -918,7 +916,8 @@ int SolverStatic::AreDependant (const StaticItem &item1, const StaticItem &item2
 	{
 		for (i = 0; i < item1.length; i++)
 			dependencyMask [i] = '.';
-		dependencyMask [i] = 0;
+		for (; i < item2.posX + item2.length - item1.posX; i++)
+			dependencyMask [i] = 0;
 	}
 
 	// Assume words are horizontal and check overlapping
