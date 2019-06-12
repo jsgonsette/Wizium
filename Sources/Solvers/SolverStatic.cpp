@@ -45,8 +45,8 @@ SolverStatic::SolverStatic ()
 	numItems = -1;		
 	idxCurrentItem = -1;
 
-	m_heurestic = true;
-	m_backTreshold = 0;
+	heurestic = true;
+	stepBack = 0;
 }
 
 
@@ -66,12 +66,12 @@ SolverStatic::~SolverStatic ()
 /// by removing problem sub spaces that are likely to be unsuccessful.
 ////
 /// \param	state			True to activate the heuristic
-/// \param	backTreshold	Heuristic level (not used)
+/// \param	stepBack		Heuristic level
 // ===========================================================================
-void SolverStatic::SetHeurestic (bool state, int backTreshold)
+void SolverStatic::SetHeurestic (bool state, int stepBack)
 {
-	this->m_heurestic = state;
-	this->m_backTreshold = backTreshold;
+	this->heurestic = state;
+	this->stepBack = stepBack;
 }
 
 
@@ -153,7 +153,7 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 	}
 
 	// Main search loop, we have finished when we have found something for every slots in our list
-	while (idxCurrentItem < numItems)
+	while (this->idxCurrentItem < this->numItems)
 	{		
 		// Get item to solve during this iteration
 		StaticItem *pItem = &items [idxCurrentItem];
@@ -164,8 +164,7 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 
 		// Find a first solution for this item
 		unsigned int subCounter;
-		int validatedCol;
-		bool result = ChangeItem (*pItem, -1, &validatedCol, &subCounter);
+		bool result = ChangeItem (*pItem, -1, &subCounter);
 		
 		this->steps += subCounter;
 		SaveCandidatesToGrid (*pItem);
@@ -174,7 +173,7 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 		if (result == false) BackTrack ();
 
 		// Backtracking failed ?
-		if (idxCurrentItem < 0)
+		if (this->idxCurrentItem < 0)
 		{
 			pDict = nullptr;
 			pGrid->Erase ();
@@ -216,12 +215,11 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 // ===========================================================================
 void SolverStatic::BackTrack ()
 {
+	unsigned int counter;
 	uint8_t mask[MAX_GRID_SIZE + 1];
 
-	StaticItem *next = nullptr;
-	StaticItem *failItem = &items[idxCurrentItem];
-	int targetCol = failItem->posX + failItem->bestPos + 1;
-	int idx = this->idxCurrentItem;
+	// The first word we change must have direct interaction with the point of failure
+	int targetCol = items [idxCurrentItem].posX + items [idxCurrentItem].bestPos + 1;
 	int idxTarget = this->idxCurrentItem;
 
 	// Reset visibility with the failing word
@@ -229,6 +227,9 @@ void SolverStatic::BackTrack ()
 	items [idxCurrentItem].visibility = true;
 
 	// Look for the next word to change
+	int idx = this->idxCurrentItem;
+	StaticItem *next = nullptr;
+
 	while (next == nullptr)
 	{
 		// Try to backtrack 
@@ -238,12 +239,30 @@ void SolverStatic::BackTrack ()
 			idxCurrentItem = -1;
 			break;
 		}
+		next = &items [idx];
+
+		// If no target and heuristic activated, determine the column we force to change
+		if (this->heurestic == true && targetCol == -1)
+		{
+			// Take the column that collected the higest rate of failure
+			targetCol = next->posX;
+			for (int i = next->posX; i < next->posX + next->length; i++)
+			{
+				if ((*pGrid) (i, next->posY)->GetFailCounter () >
+					(*pGrid) (targetCol, next->posY)->GetFailCounter ()) targetCol = i;
+			}
+
+			// Reset counter for this word
+			for (int i = next->posX; i < next->posX + next->length; i++)
+				(*pGrid) (i, next->posY)->ResetFailCounter ();
+
+			// Push a bit more
+			targetCol -= this->stepBack;
+			if (targetCol < next->posX) targetCol = next->posX;
+		}
 
 		// Now try to change the item we went back to. 
-		int valCol;
-		unsigned int counter;
-		next = &items[idx];
-		bool r = ChangeItem (*next, targetCol, &valCol, &counter);
+		bool r = ChangeItem (*next, targetCol, &counter);
 		
 		// No more target
 		idxTarget = targetCol = -1;
@@ -278,7 +297,7 @@ int SolverStatic::BackTrackStep (int idxTarget, int& targetCol, int idx)
 	uint8_t mask[MAX_GRID_SIZE + 1];
 	StaticItem *target = (idxTarget >= 0) ? &items[idxTarget] : nullptr;
 
-	// Remove items up to a given point 
+	// Remove items until we meet our interaction criteria
 	while (--idx >= 0)
 	{
 		// Remove word from grid and prepare to use it
@@ -326,14 +345,11 @@ int SolverStatic::BackTrackStep (int idxTarget, int& targetCol, int idx)
 ///
 /// \param	item			Item to change
 /// \param	colToChange		Absolute position (along the row) of the letter that must change. (-1 if not needed)
-/// \param	pValidatedCol	Best absolute position that we could reach while trying to choose a word to put on the grid.
-///							Letter of a word are checked from the left to right. 
-///							The check consits in to be sure a cross word can still be layout on the grid at each letter position.
-/// \param	pNumAttempts	Counter giving the number of words we tried before finding a suitable solution.
+/// \param	pCounter		Counter giving the number of words we tried before finding a suitable solution.
 ///
 ///	Return:					True if we could find a suitable solution.
 // ===========================================================================
-bool SolverStatic::ChangeItem (StaticItem &item, int colToChange, int *pValidatedCol, unsigned int* pCounter)
+bool SolverStatic::ChangeItem (StaticItem &item, int colToChange, unsigned int* pCounter)
 {
 	bool result;
 
@@ -369,9 +385,7 @@ bool SolverStatic::ChangeItem (StaticItem &item, int colToChange, int *pValidate
 		else break;
 	} while (true);
 
-	if (pValidatedCol != nullptr) *pValidatedCol = item.posX + item.bestPos;
 	if (pCounter != nullptr) *pCounter = stepCounter;
-
 	return result;
 }
 
@@ -597,11 +611,11 @@ bool SolverStatic::CheckItemCross (StaticItem &item, int *pBestPos)
 		
 		// Update mask with the letter that would be at the intersection
 		// ('item' is not on the grid, so the mask should be updated)
-		if (m_crossMasks [i].len <= 1) continue;
-		m_crossMasks [i].mask [m_crossMasks [i].backOffset] = item.word [i];
+		if (crossMasks [i].len <= 1) continue;
+		crossMasks [i].mask [crossMasks [i].backOffset] = item.word [i];
 
 		// Can we find a word ?
-		if (pDict->FindEntry (word, m_crossMasks [i].mask) == true)
+		if (pDict->FindEntry (word, crossMasks [i].mask) == true)
 		{
 			item.SetCrossCandidate (i, item.word [i], true);
 			continue;
@@ -610,7 +624,7 @@ bool SolverStatic::CheckItemCross (StaticItem &item, int *pBestPos)
 		// Invalidate the failing letter if no possibility
 		item.SetCandidate (i, item.word [i], false);
 
-		// Propagate this failure around in the column
+		// Propagate this failure through the column
 		this->pGrid->FailAtColumn (item.posX + i, item.posY);
 	
 		// Return best position
@@ -639,15 +653,15 @@ void SolverStatic::BuildCrossMasks (StaticItem &item)
 		int y = item.posY;
 
 		// Compute mask for the crossword, along with its offset relative to 'item'
-		m_crossMasks [i].backOffset = pGrid->BuildMask (m_crossMasks [i].mask, x, y, 'V', true);
+		crossMasks [i].backOffset = pGrid->BuildMask (crossMasks [i].mask, x, y, 'V', true);
 		int len = -1;
-		while (m_crossMasks [i].mask [++len]);
-		m_crossMasks [i].len = len;
+		while (crossMasks [i].mask [++len]);
+		crossMasks [i].len = len;
 
 		// Check the crossword is not already completely defined, if so skip it
 		int j = 0;
-		while (m_crossMasks [i].mask [j] != 0 && m_crossMasks [i].mask [j] != '*') j ++;
-		if (m_crossMasks [i].mask [j] == 0) m_crossMasks [i].len = 0;
+		while (crossMasks [i].mask [j] != 0 && crossMasks [i].mask [j] != '*') j ++;
+		if (crossMasks [i].mask [j] == 0) crossMasks [i].len = 0;
 	}
 }
 
@@ -853,37 +867,6 @@ void SolverStatic::SortWordList (StaticItem wordList [], int listLength)
 
 
 // ===========================================================================
-/// \brief	Exclude words that already exist on the grid from our working list
-///
-/// \param[in,out]	pList			List of words/slots
-/// \param			listLength		Number of items in the list
-// ===========================================================================
-void SolverStatic::ExcludeDefinedWords (StaticItem pList [], int listLength)
-{
-/*	int i, j;
-	uint8_t pmask [MAX_GRID_SIZE+1];
-	bool defined = true;
-	
-	// Process each slot
-	for (i = 0; i < listLength-1; i ++)
-	{
-		// Build corresponding mask
-		defined = true;
-		pGrid->BuildMask (pmask, pList[i].posX, pList[i].posY, 'H', false);
-
-		// Test mask completeness
-		for (j = 0; j < Len2 (pmask); j ++)
-		{
-			if (pmask [j] == '*') defined = false;
-		}
-
-		// Tag the item if needed
-		//if (defined == true) pList[i].dictStep = C_StaticItem2::Ce_Skip;
-	}*/
-}
-
-
-// ===========================================================================
 /// \brief	Detect if two words see each other through a common crossword
 /// 
 /// \param		item1			First word/slot to test
@@ -948,34 +931,6 @@ int SolverStatic::AreDependant (const StaticItem &item1, const StaticItem &item2
 	} // if
 
 	return connect;
-}
-
-
-// ===========================================================================
-/// \brief	Convert letter index of a given word in grid coordinate
-/// 
-/// \param		item		Target word/slot
-/// \param		letterIdx	Index of the letter in the word
-///
-/// \return		Grid coordinate (along word/slot direction)
-// ===========================================================================
-inline int SolverStatic::LetterIdx2Offset (const StaticItem &item, int letterIdx)
-{
-	return item.posX + letterIdx;
-}
-
-
-// ===========================================================================
-/// \brief	Convert a grid coordinate into a letter index of a given word
-/// 
-/// \param		item		Target word/slot
-/// \param		offset		Grid coordinate (along word/slot direction)
-///
-/// \return		Index of the corresponding letter in the word
-// ===========================================================================
-inline int SolverStatic::Offset2LetterIdx (const StaticItem &item, int offset)
-{
-	return offset - item.posX;
 }
 
 

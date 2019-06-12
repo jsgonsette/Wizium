@@ -74,10 +74,17 @@ Library::Module* Library::CreateInstance (const Config& config)
 void Library::DestroyInstance (Module* module)
 {
 	const Module* p = this->modules;
-	while (p && p != module) p = p->next;
-
-	assert (p != nullptr);
-	if (p) delete module;
+	
+	if (this->modules == module)
+		this->modules = module->next;
+	else
+	{
+		while (p && p->next && p->next != module) p = p->next;
+		assert (p != nullptr);
+		p->next = module->next;
+	}
+	
+	delete module;
 }
 
 

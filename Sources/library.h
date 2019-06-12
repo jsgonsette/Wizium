@@ -77,7 +77,7 @@ private:
 	static Library s_library;
 
 	/// All independant modules
-	Module* modules;
+	const Module* modules;
 };
 
 

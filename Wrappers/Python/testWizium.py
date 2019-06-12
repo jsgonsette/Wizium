@@ -120,25 +120,25 @@ def load_dictionary (wiz, dico_path):
 
 
 # ============================================================================
-def solve (wiz, max_black=0, seed=1):
+def solve (wiz, max_black=0, heuristic_level=0, seed=0):
     """Solve the grid
         
-    wiz         Wizium instance
-    max_black   Max number of black cases to add (0 if not allowed)
-    seed        Random Number Generator seed (0: take at random)
+    wiz             Wizium instance
+    max_black       Max number of black cases to add (0 if not allowed)
+    heuristic_level Heuristic level (0 if deactivated)
+    seed            Random Number Generator seed (0: take at random)
     """
 # ============================================================================
 
     if not seed: seed = random.randint(1, 1000000)
 
     # Configure the solver
-    wiz.solver_start (seed=seed, black_mode='DIAG', max_black=max_black, heuristic_level=2)
+    wiz.solver_start (seed=seed, black_mode='DIAG', max_black=max_black, heuristic_level=heuristic_level)
     tstart = time.time ()
     
     # Solve with steps of 500ms max, in order to draw the grid content evolution
     while True:
-        # status = wiz.solver_step (max_time_ms=500) 
-        status = wiz.solver_step (max_steps=1000000) 
+        status = wiz.solver_step (max_time_ms=500) 
 
         draw (wiz)
         print (status)
@@ -175,12 +175,12 @@ load_dictionary (wiz, DICO_PATH)
 # Example with fixed pattern
 if EXAMPLE == 1:
     set_grid_1 (wiz)
-    solve (wiz, 0)
+    solve (wiz, max_black=0, heuristic_level=2)
 
 # Example with dynamic black cases placement
 elif EXAMPLE == 2:
     set_grid_2 (wiz)
-    solve (wiz, 30)
+    solve (wiz, max_black=30, heuristic_level=2)
 
 # Perfect 9x9 resolution example (french)
 # Need 24e+9 tests in the worst case, which may take ~10hours
@@ -208,6 +208,6 @@ elif EXAMPLE == 3:
     wiz.dic_add_entries (words)
     
     wiz.grid_set_size (9,9)
-    solve (wiz, 0)
+    solve (wiz, max_black=0, heuristic_level=0)
 
 exit ()

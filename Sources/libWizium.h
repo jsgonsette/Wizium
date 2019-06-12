@@ -115,7 +115,7 @@ typedef struct
 {
 	uint32_t seed;				///< RNG seed
 	int32_t maxBlackBoxes;		///< Max number of black cases that can be added to the grid
-	int32_t heuristicLevel;		///< Heurisitic level (see doc)
+	int32_t heuristicLevel;		///< Heurisitic level (<=0: no heuristic)
 	BlackMode blackMode;		///< Rule for the generation of black boxes
 }
 SolverConfig;

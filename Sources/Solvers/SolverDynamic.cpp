@@ -219,6 +219,27 @@ Status SolverDynamic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 
 
 // ===========================================================================
+/// \brief		Set the parameters of the heuristic mecanism used during the 
+///				generation process
+///
+/// \param		state		True to activate the heuristic
+/// \param		stepBack	Number of steps back when solver is blocked
+// ===========================================================================
+void SolverDynamic::SetHeurestic (bool state, int stepBack)
+{
+	this->heurestic = state;
+	this->stepBack = stepBack;
+}
+
+
+
+// ###########################################################################
+//
+// P R I V A T E
+//
+// ###########################################################################
+
+// ===========================================================================
 /// \brief	Go back in the generation process by modifying items that are
 ///			already on the grid. We try to update an item that impact
 ///			a given location on the grid.
@@ -245,7 +266,7 @@ SolverDynamic::DynamicItem* SolverDynamic::Backtrack (int valRow, int valCol)
 			pItem = GetLastItem ();
 			if (pItem == nullptr) break;
 			pItem->RemoveFromGrid (*this->pGrid);
-			
+
 			changeLength = false;
 			targetCol = -1;
 
@@ -269,14 +290,13 @@ SolverDynamic::DynamicItem* SolverDynamic::Backtrack (int valRow, int valCol)
 
 			pItem = RemoveLastItem ();
 			PushUnusedItem (pItem);
-		} 
-		while (true);
+		} while (true);
 		if (pItem == nullptr) break;
 
 		// Now try to change the word. We can force to change length
 		unsigned int counter;
 		bool r = ChangeItem (pItem, changeLength, targetCol, &valCol, &counter);
-		
+
 		// Update counter and candidates
 		this->steps += counter;
 		pItem->SaveCandidatesToGrid (*this->pGrid);
@@ -309,20 +329,6 @@ SolverDynamic::DynamicItem* SolverDynamic::Backtrack (int valRow, int valCol)
 	}
 
 	return pItem;
-}
-
-
-// ===========================================================================
-/// \brief		Set the parameters of the heuristic mecanism used during the 
-///				generation process
-///
-/// \param		state		True to activate the heuristic
-/// \param		stepBack	Number of steps back when solver is blocked
-// ===========================================================================
-void SolverDynamic::SetHeurestic (bool state, int stepBack)
-{
-	this->heurestic = state;
-	this->stepBack = stepBack;
 }
 
 

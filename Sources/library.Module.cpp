@@ -64,8 +64,8 @@ ISolver& Library::Module::GetSolver (const SolverConfig& config)
 	{
 		this->solverStat.SetSeed (config.seed);
 
-		if (config.heuristicLevel >= 0)
-			this->solverStat.SetHeurestic (true, config.heuristicLevel);
+		if (config.heuristicLevel > 0)
+			this->solverStat.SetHeurestic (true, config.heuristicLevel -1);
 		else
 			this->solverStat.SetHeurestic (false, 0);
 
@@ -78,8 +78,8 @@ ISolver& Library::Module::GetSolver (const SolverConfig& config)
 	{
 		this->solverDyn.SetSeed (config.seed);
 
-		if (config.heuristicLevel >= 0)
-			this->solverDyn.SetHeurestic (true, config.heuristicLevel);
+		if (config.heuristicLevel > 0)
+			this->solverDyn.SetHeurestic (true, config.heuristicLevel -1);
 		else
 			this->solverDyn.SetHeurestic (false, 0);
 

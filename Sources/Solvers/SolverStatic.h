@@ -75,7 +75,7 @@ private:
 	void BackTrack ();
 	int BackTrackStep (int idxTarget, int& targetCol, int idx);
 	
-	bool ChangeItem (StaticItem &item, int posToChange, int *pValidatedPos, unsigned int* pNumAttempts);
+	bool ChangeItem (StaticItem &item, int colToChange, unsigned int* pNumAttempts);
 	bool ChangeItemWord (StaticItem &item, uint8_t mask [], int unvalidatedIdx, bool strict);
 	bool CheckItemCross (StaticItem &item, int *pBestPos);
 	void BuildCrossMasks (StaticItem &item);
@@ -87,26 +87,23 @@ private:
 
 	int FindWordToStart (StaticItem pList [], int listLength);
 	int FindWordNext (StaticItem pList [], int listLength);
-	void ExcludeDefinedWords (StaticItem pList [], int listLength);
-
+	
 	void SaveCandidatesToGrid (const StaticItem &iItem);
 	void LoadCandidatesFromGrid (StaticItem &item);
 	void ResetCandidatesAround (const StaticItem &item);
 	
-	int LetterIdx2Offset (const StaticItem &item, int letterIdx);
-	int Offset2LetterIdx (const StaticItem &item, int offset);
 
 private:
 
 	StaticItem* items;						///< All the horizontal slots to resolve
-	CrossMask m_crossMasks [MAX_GRID_SIZE];	///< Cross masks for the current item to solve
+	CrossMask crossMasks [MAX_GRID_SIZE];	///< Cross masks for the current item to solve
 	
 	int numItems;							///< Number of words to place on the grid
 	int idxCurrentItem;						///< Current slot we are currently resolving											
 	
 	// Heurestic
-	bool m_heurestic;
-	int m_backTreshold;
+	bool heurestic;
+	int stepBack;
 };
 
 
