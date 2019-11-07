@@ -6,7 +6,7 @@ This project is a *crosswords generator engine* able to generate grids from dict
 
 The engine comes as a library written in C++. A python wrapper is available right now, other languages may be easily added.
 
-A high level explanation of this project can be found on [my blog](https://jsgonsette.github.io/wizium/) (in French) or on [Medium](https://medium.com/@jeansebastien.gonsette/how-i-learned-backtracking-thanks-to-crosswords-d6e586c3f961) (in English).
+A high level explanation of this project can be found on [my blog](https://jsgonsette.github.io/projects/wizium/) (in French) or on [Medium](https://medium.com/@jeansebastien.gonsette/how-i-learned-backtracking-thanks-to-crosswords-d6e586c3f961) (in English).
 
 
 ## How to compile the library
