@@ -1,6 +1,6 @@
 # Wizium
 
-This project is a *crosswords generator engine* able to generate grids from dictonaries, as depicted below. The generator is very fast and can work with initial constraints like fixed black boxes pattern or words already in place on the grid.
+This project is a *crosswords generator engine* able to generate grids from dictionaries, as depicted below. The generator is very fast and can work with initial constraints like fixed black boxes pattern or words already in place on the grid.
 
 ![Crosswords](./Pictures/Crosswords.png)
 
@@ -70,7 +70,7 @@ It contains the following functions:
 
 ### Python
 
-[libWizium.py](./Wrappers/Python/libWizium.py) is a Python wrapper giving full access to the engine capabilities. A Wizium module instance can be created through the *Wizium* class, provided the path to the *libWizium* library file. Except for the initialization that is handled automatically, there is a 1-to-1 correspondance between this class functions and the their equivalents in C.
+[libWizium.py](./Wrappers/Python/libWizium.py) is a Python wrapper giving full access to the engine capabilities. A Wizium module instance can be created through the *Wizium* class, provided the path to the *libWizium* library file. Except for the initialization that is handled automatically, there is a 1-to-1 correspondence between this class functions and the their equivalents in C.
 
 This class provides the following API:
 
