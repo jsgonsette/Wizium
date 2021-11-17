@@ -60,7 +60,7 @@ Grid::~Grid ()
 ///
 /// \return		Pointer to the grid box
 // ===========================================================================
-inline Box* Grid::operator () (int x, int y)
+Box* Grid::operator () (int x, int y)
 {
 	if (y < 0 || y >= mSy) return nullptr;
 	if (x < 0 || x >= mSx) return nullptr;
@@ -77,7 +77,7 @@ inline Box* Grid::operator () (int x, int y)
 ///
 /// \return		Pointer to the grid box
 // ===========================================================================
-inline const Box* Grid::operator () (int x, int y) const
+const Box* Grid::operator () (int x, int y) const
 {
 	if (y < 0 || y >= mSy) return nullptr;
 	if (x < 0 || x >= mSx) return nullptr;
