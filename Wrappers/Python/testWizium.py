@@ -33,6 +33,8 @@ from libWizium import Wizium
 # Update those paths if needed !
 if platform.system()=='Linux':
     PATH = './../../Binaries/Linux/libWizium.so'
+elif platform.system()=='Darwin':
+    PATH = './../../Binaries/Darwin/liblibWizium.dylib'
 else:
     PATH = './../../Binaries/Windows/libWizium_x64.dll'
 

@@ -24,7 +24,11 @@ __version__ = "1.0"
 
 import ctypes
 import platform
-if platform.system()=='Linux':
+
+def is_unix_platform():
+	return platform.system() in ('Linux', 'Darwin')
+
+if is_unix_platform():
 	from ctypes import *
 else:
 	from ctypes import c_int, WINFUNCTYPE, windll
@@ -86,7 +90,7 @@ class Wizium:
 	# ============================================================================
 
 		# Link to the lPPMM dll
-		if platform.system()=='Linux':
+		if is_unix_platform():
 			self._dll = ctypes.CDLL(dll_path)
 		else:
 			self._dll = ctypes.WinDLL (dll_path)	
@@ -114,7 +118,7 @@ class Wizium:
 		for func_name in self._api_def:
 			return_type = self._api_def [func_name][0]
 			arg_types = self._api_def [func_name][1]
-			if platform.system()=='Linux':
+			if is_unix_platform():
 				proto = ctypes.CFUNCTYPE (return_type, *arg_types)
 			else:
 				proto = ctypes.WINFUNCTYPE (return_type, *arg_types)
