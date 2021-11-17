@@ -556,7 +556,7 @@ unsigned char Grid::BuildMask (uint8_t mask [], uint8_t x, uint8_t y, char dir, 
 	if (goBack)
 	{
 		// Still possible to go back ?
-		while (dir == 'H' && x > 0 || dir == 'V' && y > 0)
+		while ((dir == 'H' && x > 0) || (dir == 'V' && y > 0))
 		{
 			// Go back
 			if (dir == 'H') x --;
