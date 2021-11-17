@@ -33,14 +33,21 @@ add_library (libWizium
 	Solvers/ISolver.h
 	)
 
+set_property(TARGET libWizium PROPERTY CXX_STANDARD 17)
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-	message (STATUS "GCC configuration")
-    target_compile_options(libWizium PRIVATE -Wall -Wextra)
+
+if (APPLE)
+	message (STATUS "Darwin configuration")
+	target_compile_options(libWizium PRIVATE -Wall -Wextra)
+	set (PATH ./../Binaries/Darwin/)
+
+elseif (UNIX)
+	message (STATUS "Unix configuration")
+	target_compile_options(libWizium PRIVATE -Wall -Wextra)
 	set (PATH ./../Binaries/Linux/)
 	set_target_properties(libWizium PROPERTIES PREFIX "")
 
-elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+elseif (MSVC)
 	message (STATUS "Microsoft Visual Studio configuration")
 	target_compile_options(libWizium PRIVATE /W3 /O2 /Oi /GL /Gy)
 	target_compile_definitions(libWizium PRIVATE LIBWIZIUM_EXPORTS)
