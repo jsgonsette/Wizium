@@ -36,6 +36,13 @@ else:
 
 # ############################################################################
 
+WILDCARD = '*'
+WILDCARD_CODE = 255
+BLOCK = '#'
+BLOCK_CODE = ord(BLOCK)
+VOID = '-'
+VOID_CODE = ord(VOID)
+
 class Wizium:
     "Wrapper around the libWizium library"
 
@@ -83,10 +90,11 @@ class Wizium:
 
 
     # ============================================================================
-    def __init__ (self, dll_path):
+    def __init__ (self, dll_path, alphabet=None):
         """Constructor
 
-        param    dll_path        path to the libWizium dll/so file to use"""
+        param    dll_path        path to the libWizium dll/so file to use
+        param    alphabet        string containing all same-case characters of the alphabet"""
     # ============================================================================
 
         # Link to the lPPMM dll
@@ -135,7 +143,10 @@ class Wizium:
             Wizium._init_done = True
 
         # Create an instance
-        self._wiz_create_instance ()
+        self._wiz_create_instance (
+            alphabet_size=len(alphabet) if alphabet else 0
+        )
+        self.encoding = make_codec(alphabet)
         if self._instance == 0:
             raise Exception ("lPPMM Library HANDLE could not be created")
 
@@ -164,7 +175,7 @@ class Wizium:
     def dic_add_entries (self, entries):
         """Add entries to the dictionary
 
-        entries:        List of strings (must only contain ascii characters)
+        entries:        List of strings (must only contain characters from the alphabet)
         return:            Number of words added to the dictionary
         """
     # ============================================================================
@@ -177,7 +188,7 @@ class Wizium:
         # Put the list in the array
         skip = 0
         for idx, entry in enumerate (entries):
-            be = bytearray (entry, 'ascii')
+            be = bytearray (entry, self.encoding)
             if len (be) > self._max_word_length:
                 skip += 1
                 print ("Skip " + entry)
@@ -207,7 +218,7 @@ class Wizium:
         ctab = (ctypes.c_uint8 * (length +1)).from_buffer (tab)
 
         tab_mask = bytearray (length +1)
-        tab_mask [0:length] = bytearray (mask, 'ascii')
+        tab_mask [0:length] = bytearray (mask, self.encoding)
         tab_mask [length] = 0
         cmask = (ctypes.c_uint8 * (length +1)).from_buffer (tab_mask)
 
@@ -216,7 +227,7 @@ class Wizium:
         success = api (instance, ctab, cmask)
 
         if not success: return None
-        else: return str (ctab, 'ascii')
+        else: return str (ctab, self.encoding)
 
 
     # ============================================================================
@@ -237,12 +248,12 @@ class Wizium:
         ctab = (ctypes.c_uint8 * (length +1)).from_buffer (tab)
 
         tab_mask = bytearray (length +1)
-        tab_mask [0:length] = bytearray (mask, 'ascii')
+        tab_mask [0:length] = bytearray (mask, self.encoding)
         cmask = (ctypes.c_uint8 * (length +1)).from_buffer (tab_mask)
 
         if start:
             start_mask = bytearray (length +1)
-            start_mask [0:len (start)] = bytearray (start, 'ascii')
+            start_mask [0:len (start)] = bytearray (start, self.encoding)
             cstart = (ctypes.c_uint8 * (length +1)).from_buffer (start_mask)
         else:
             cstart = None
@@ -252,7 +263,7 @@ class Wizium:
         success = api (instance, ctab, cmask, cstart)
 
         if not success: return None
-        else: return str (ctab, 'ascii')
+        else: return str (ctab, self.encoding)
 
 
     # ============================================================================
@@ -316,7 +327,7 @@ class Wizium:
     # ============================================================================
 
         ba = bytearray (len (word) +1)
-        ba [0:len (word)] = bytearray (word, 'ascii')
+        ba [0:len (word)] = bytearray (word, self.encoding)
         bword = (ctypes.c_uint8 * (len (word) +1)).from_buffer (ba)
 
         instance = ctypes.c_ulonglong (self._instance)
@@ -342,7 +353,7 @@ class Wizium:
 
         grid = [''] * self._height
         for i in range (self._height):
-            grid [i] = str (tab [self._width*i: self._width*(i+1)], 'ascii') + '\n'
+            grid [i] = str (tab [self._width*i: self._width*(i+1)], self.encoding) + '\n'
 
         return grid
 
@@ -445,3 +456,60 @@ class Wizium:
         instance = ctypes.c_ulonglong (self._instance)
         (api, proto) = self._api ["WIZ_DestroyInstance"]
         api (instance)
+
+
+
+# ============================================================================
+def make_codec(alphabet, __alphabets={}):
+    """\
+    Register a custom codec for the supplied alphabet that maps to 1..len(alphabet)
+
+    returns codec name
+    """
+# ============================================================================
+    if alphabet is None:
+        return 'ascii'
+
+    if WILDCARD in alphabet:
+        raise ValueError("'{WILDCARD}' is a wildcard and cannot be part of the alphabet")
+
+    codec_name = __alphabets.get(alphabet)
+    if codec_name is not None:
+        return codec_name
+
+    max_alphabet_len = min(BLOCK_CODE, VOID_CODE, WILDCARD_CODE) - 1
+    if len(alphabet) > max_alphabet_len:
+        raise ValueError(f"alphabet cannot have more than {max_alphabet_len} characters due to internal encoding of blocks, voids and wildcards")
+
+    import codecs
+
+    decoding_table = list('.' + alphabet)
+    decoding_table.extend('?' for i in range(len(decoding_table), 256))
+    decoding_table[VOID_CODE] = VOID
+    decoding_table[BLOCK_CODE] = BLOCK
+    decoding_table[WILDCARD_CODE] = WILDCARD
+
+    decoding_table = ''.join(decoding_table)
+
+    encoding_table = codecs.charmap_build(decoding_table)
+    # case insensitive encoding
+    encoding_table.update((ord(c), i) for i, c in enumerate(alphabet.lower(), 1))
+    encoding_table.update((ord(c), i) for i, c in enumerate(alphabet.upper(), 1))
+
+    def encode(input, errors='strict'):
+        return codecs.charmap_encode(input, errors, encoding_table)
+    def decode(input, errors='strict'):
+        return codecs.charmap_decode(input, errors, decoding_table)
+
+    codec_name = __alphabets.setdefault(alphabet,
+                                        f"wizium_{id(__alphabets)}_{len(__alphabets)}")
+    def search(encoding):
+        if encoding == codec_name:
+            return codecs.CodecInfo(encode, decode,
+                                    None, None,
+                                    None, None,
+                                    codec_name)
+        return None
+
+    codecs.register(search)
+    return codec_name
