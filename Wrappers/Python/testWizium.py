@@ -26,6 +26,8 @@ import re
 import platform
 import random
 import time
+import functools
+import operator
 from libWizium import Wizium
 
 # ############################################################################
@@ -122,7 +124,7 @@ def load_dictionary (wiz, dico_path):
 
 
 # ============================================================================
-def solve (wiz, max_black=0, heuristic_level=0, seed=0):
+def solve (wiz, max_black=0, heuristic_level=0, seed=0, black_mode='DIAG'):
     """Solve the grid
 
     wiz             Wizium instance
@@ -135,7 +137,7 @@ def solve (wiz, max_black=0, heuristic_level=0, seed=0):
     if not seed: seed = random.randint(1, 1000000)
 
     # Configure the solver
-    wiz.solver_start (seed=seed, black_mode='DIAG', max_black=max_black, heuristic_level=heuristic_level)
+    wiz.solver_start (seed=seed, black_mode=black_mode, max_black=max_black, heuristic_level=heuristic_level)
     tstart = time.time ()
 
     # Solve with steps of 500ms max, in order to draw the grid content evolution
@@ -158,35 +160,29 @@ def solve (wiz, max_black=0, heuristic_level=0, seed=0):
     tend = time.time ()
     print ("Compute time: {:.01f}s".format (tend-tstart))
 
+def example_1():
+    # Create a Wizium instance
+    wiz = Wizium (os.path.join (os.getcwd (), PATH))
+    # Load the dictionary
+    load_dictionary (wiz, DICO_PATH)
 
-
-# ============================================================================
-"""Main"""
-# ============================================================================
-
-# -->  C H O O S E  <--
-EXAMPLE = 1
-
-# Create a Wizium instance
-wiz = Wizium (os.path.join (os.getcwd (), PATH))
-
-# Load the dictionary
-load_dictionary (wiz, DICO_PATH)
-
-
-# Example with fixed pattern
-if EXAMPLE == 1:
     set_grid_1 (wiz)
     solve (wiz, max_black=0, heuristic_level=2)
 
-# Example with dynamic black cases placement
-elif EXAMPLE == 2:
+def example_2():
+    # Create a Wizium instance
+    wiz = Wizium (os.path.join (os.getcwd (), PATH))
+    # Load the dictionary
+    load_dictionary (wiz, DICO_PATH)
+
     set_grid_2 (wiz)
     solve (wiz, max_black=30, heuristic_level=2)
 
-# Perfect 9x9 resolution example (french)
-# Need 24e+9 tests in the worst case, which may take ~10hours
-elif EXAMPLE == 3:
+def example_3():
+    # Create a Wizium instance
+    wiz = Wizium (os.path.join (os.getcwd (), PATH))
+    # Load the dictionary
+    load_dictionary (wiz, DICO_PATH)
 
     # Add the missing words needed to be able to solve the grid
     words = ['REABRASES',
@@ -211,5 +207,66 @@ elif EXAMPLE == 3:
 
     wiz.grid_set_size (9,9)
     solve (wiz, max_black=0, heuristic_level=0)
+
+def example_4():
+    dictionary = sorted(
+        """
+        ali lepa pač pol oči češ koli oče plač pokal ekipa lep kola šola kopač pik
+        išče loka klop ako češki čelo lek peči špela peš koš čop šok pil
+        plošča lik peč kip pika pel kapo plašč očka čok alpe kol šale čela
+        kap špik lok pak pekla lipa čile koča kopališče pola kali pike lepša
+        pila pleča peka čip opel kal loški ček laški šopek poka lipe opla šop
+        eko pok šal paki koč očali apel klepač polič čopa plošček kač oli
+        pošle kolišče oklep šepa ila pičlo kopel oča piščal kopal ilo kleč
+        polka kape pikl piš kič kop čik kolač peki api pek kopa palček kapič
+        čeka pičel peška opeka laik šipek poček čil špika pišek kepa peklo
+        kopič polk oček pilo pelo kliše poli kalič leči lak alo šilo pleška
+        lečo lašč liko čipka pleč opa polke peča klep očak šik aki lopa pečal
+        leča šipa klešč poč paš lop pleša pekač loč ščap ščip laki pečka
+        leški lišp klopa šček kep pišče pači kila čep peški šopa šipka olika
+        epika šap lepak kališče piška lakič opal keš oka čap piške paški čak
+        pako kiša čao plašček špila lička košič špil kli poliček ilka eia
+        poleči čopka šlek lošč kleča čoka alk leš ipak čelika pečak
+        lišpa opekač klo keč ščipa loček količ okel čepa klope klip opeči
+        ščep klap šlk pilka kečap kalo epik akel eki kopišče klošč
+        """.split())
+
+    alphabet = "".join(sorted(functools.reduce(operator.or_, map(set, dictionary))))
+
+    print(f"Dictionary with {len(dictionary)} words uses alphabet '{alphabet}'")
+
+    # Create a Wizium instance
+    wiz = Wizium (os.path.join (os.getcwd (), PATH),
+                  alphabet=alphabet)
+
+    # Load dictionary
+    wiz.dic_clear()
+    n = wiz.dic_add_entries(dictionary)
+
+    wiz.grid_set_size(10, 10)
+    solve(wiz, max_black=25, heuristic_level=2, black_mode='DIAG')
+
+# ============================================================================
+"""Main"""
+# ============================================================================
+
+# -->  C H O O S E  <--
+EXAMPLE = 4
+
+
+# Example with fixed pattern
+if EXAMPLE == 1:
+    example_1()
+
+# Example with dynamic black cases placement
+elif EXAMPLE == 2:
+    example_2()
+# Perfect 9x9 resolution example (french)
+# Need 24e+9 tests in the worst case, which may take ~10hours
+elif EXAMPLE == 3:
+    example_3()
+# Use foreign alphabet
+elif EXAMPLE == 4:
+    example_4()
 
 exit ()
