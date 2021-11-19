@@ -60,7 +60,7 @@ Grid::~Grid ()
 ///
 /// \return		Pointer to the grid box
 // ===========================================================================
-inline Box* Grid::operator () (int x, int y)
+Box* Grid::operator () (int x, int y)
 {
 	if (y < 0 || y >= mSy) return nullptr;
 	if (x < 0 || x >= mSx) return nullptr;
@@ -77,7 +77,7 @@ inline Box* Grid::operator () (int x, int y)
 ///
 /// \return		Pointer to the grid box
 // ===========================================================================
-inline const Box* Grid::operator () (int x, int y) const
+const Box* Grid::operator () (int x, int y) const
 {
 	if (y < 0 || y >= mSy) return nullptr;
 	if (x < 0 || x >= mSx) return nullptr;
@@ -556,7 +556,7 @@ unsigned char Grid::BuildMask (uint8_t mask [], uint8_t x, uint8_t y, char dir, 
 	if (goBack)
 	{
 		// Still possible to go back ?
-		while (dir == 'H' && x > 0 || dir == 'V' && y > 0)
+		while ((dir == 'H' && x > 0) || (dir == 'V' && y > 0))
 		{
 			// Go back
 			if (dir == 'H') x --;

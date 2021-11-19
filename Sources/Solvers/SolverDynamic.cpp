@@ -69,9 +69,6 @@ SolverDynamic::~SolverDynamic ()
 // ===========================================================================
 void SolverDynamic::Solve_Start (Grid &grid, const Dictionary &dico)
 {
-	int count = 0;
-	Box *box = nullptr;
-
 	Solve_Stop ();
 
 	// Use given grid and dictionary

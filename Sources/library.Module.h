@@ -21,7 +21,7 @@
 // ###########################################################################
 
 #ifndef LIBRARY_MODULE_H
-#define LIBRARY_MODULEH
+#define LIBRARY_MODULE_H
 
 #include "library.h"
 #include "Grid/Grid.h"

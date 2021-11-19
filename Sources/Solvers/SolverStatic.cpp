@@ -99,8 +99,6 @@ void SolverStatic::Solve_Stop ()
 // ===========================================================================
 void SolverStatic::Solve_Start (Grid &grid, const Dictionary &dico)
 {
-	Box *box = nullptr;
-
 	Solve_Stop ();
 
 	// Save dictionary and grid
@@ -216,7 +214,6 @@ Status SolverStatic::Solve_Step (int32_t maxTimeMs, int32_t maxSteps)
 void SolverStatic::BackTrack ()
 {
 	unsigned int counter;
-	uint8_t mask[MAX_GRID_SIZE + 1];
 
 	// The first word we change must have direct interaction with the point of failure
 	int targetCol = items [idxCurrentItem].posX + items [idxCurrentItem].bestPos + 1;

@@ -48,7 +48,7 @@ constexpr auto VER_RELEASE = 1;
 #   define EXTERN_C    extern
 #endif
 
-#ifdef __linux__
+#ifndef PL_WIN32
 #define LIB_API
 #else
 #ifdef LIBWIZIUM_EXPORTS
