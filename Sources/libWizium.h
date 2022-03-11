@@ -35,8 +35,8 @@ constexpr auto VER_RELEASE = 1;
 //
 // ###########################################################################
 
-#if defined(WIN32)
-#define PL_WIN32		///< Windows
+#if defined(_WIN64) || defined (_WIN32)
+#define PL_WINDOWS		///< Windows
 #elif defined(__linux__)
 #define PL_LINUX		///< Linux
 #endif
@@ -48,7 +48,7 @@ constexpr auto VER_RELEASE = 1;
 #   define EXTERN_C    extern
 #endif
 
-#ifndef PL_WIN32
+#ifndef PL_WINDOWS
 #define LIB_API
 #else
 #ifdef LIBWIZIUM_EXPORTS
