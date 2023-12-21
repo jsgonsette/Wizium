@@ -38,7 +38,7 @@ Assuming CMake and Visual Studio are installed on your machine,
 Assuming CMake in installed on your machine,
 
 * Step in ```cmake``` directory
-* Run the command ```cmake ../Sources/```
+* Run the command ```cmake ../Sources/ -DCMAKE_INSTALL_PREFIX="$(pwd)"```
 * Run the command ```make```
 * Run the command ```make install```
 * The SO should be created in the ```./Binaries/Linux``` directory.
